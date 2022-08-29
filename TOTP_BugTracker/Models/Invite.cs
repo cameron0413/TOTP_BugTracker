@@ -11,7 +11,7 @@ namespace TOTP_BugTracker.Models
 
         [DataType(DataType.Date)]
         public DateTime? JoinDate { get; set; }
-        public Guid? CompanyToken { get; set; }
+        public Guid CompanyToken { get; set; }
         public int CompanyId { get; set; }
         public int ProjectId { get; set; }
 
