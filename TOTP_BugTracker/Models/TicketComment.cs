@@ -12,6 +12,8 @@ namespace TOTP_BugTracker.Models
         [DataType(DataType.DateTime)]
         public DateTime? Created { get; set; }
         public int? TicketId { get; set; }
+
+        [Required]
         public string? UserId { get; set; }
 
         // Navigation Properties

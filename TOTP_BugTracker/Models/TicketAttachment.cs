@@ -5,7 +5,7 @@ namespace TOTP_BugTracker.Models
 {
     public class TicketAttachment
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string? Description { get; set; }
 
         [DataType(DataType.DateTime)]
