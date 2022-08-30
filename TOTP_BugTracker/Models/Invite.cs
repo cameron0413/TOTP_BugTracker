@@ -10,7 +10,7 @@ namespace TOTP_BugTracker.Models
         public DateTime InviteDate { get; set; }
 
         [DataType(DataType.Date)]
-        public DateTime? JoinDate { get; set; }
+        public DateTime JoinDate { get; set; }
         public Guid CompanyToken { get; set; }
         public int CompanyId { get; set; }
         public int ProjectId { get; set; }

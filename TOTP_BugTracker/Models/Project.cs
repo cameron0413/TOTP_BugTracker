@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOTP_BugTracker.Models
@@ -16,13 +17,16 @@ namespace TOTP_BugTracker.Models
         public string? Description { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? Created { get; set; }
+        [DisplayName("Date Created")]
+        public DateTime Created { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? StartDate { get; set; }
+        [DisplayName("Project Start Date")]
+        public DateTime StartDate { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? EndDate { get; set; }
+        [DisplayName("Project End Date")]
+        public DateTime EndDate { get; set; }
         public int ProjectPriorityId { get; set; }
 
         //Properties for storing image
@@ -33,6 +37,10 @@ namespace TOTP_BugTracker.Models
         //Also not saved in the database via [NotMapped] attribute
         [NotMapped]
         public virtual IFormFile? ImageFormFile { get; set; }
+
+        [DisplayName("File Name")]
+        public string? ImageFileName { get; set; }
+
         public bool Archived { get; set; }
 
         // Navigation Properties

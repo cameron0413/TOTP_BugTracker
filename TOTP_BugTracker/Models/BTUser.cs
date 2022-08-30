@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOTP_BugTracker.Models
 {
-    public class BTUser
+    public class BTUser : IdentityUser
     {
         [Required]
         [Display(Name = "First Name")]
@@ -27,6 +28,7 @@ namespace TOTP_BugTracker.Models
         //Also not saved in the database via [NotMapped] attribute
         [NotMapped]
         public virtual IFormFile? ImageFile { get; set; }
+        public int CompanyId { get; set; }
 
         // Navigation Properties
         public virtual Company? Company { get; set; }

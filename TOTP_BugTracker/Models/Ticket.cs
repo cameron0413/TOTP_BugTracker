@@ -14,10 +14,10 @@ namespace TOTP_BugTracker.Models
         public string? Description { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? Updated { get; set; }
+        public DateTime Updated { get; set; }
         public bool Archived { get; set; }
         public bool ArchivedByProject { get; set; }
         public int ProjectId { get; set; }
@@ -38,6 +38,6 @@ namespace TOTP_BugTracker.Models
         public virtual BTUser? SubmitterUser { get; set; }
         public virtual ICollection<TicketComment> Comments { get; set; } = new HashSet<TicketComment>();
         public virtual ICollection<TicketAttachment> Attachments { get; set; } = new HashSet<TicketAttachment>();
-        public virtual TicketHistory? History { get; set; }
+        public virtual ICollection<TicketHistory>? History { get; set; } = new HashSet<TicketHistory>();
     }
 }

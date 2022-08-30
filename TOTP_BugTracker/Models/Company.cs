@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOTP_BugTracker.Models
@@ -8,8 +9,11 @@ namespace TOTP_BugTracker.Models
         public int Id { get; set; }
 
         [Required]
+        [DisplayName("Company Name")]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} and a maximum of {1} characters.", MinimumLength = 2)]
         public string? Name { get; set; }
+
+        [DisplayName("Company Description")]
         public string? Description { get; set; }
 
 

@@ -10,7 +10,7 @@ namespace TOTP_BugTracker.Models
         public string? Comment { get; set; }
 
         [DataType(DataType.DateTime)]
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
         public int? TicketId { get; set; }
 
         [Required]
