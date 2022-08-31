@@ -22,20 +22,20 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketStatuses
         public async Task<IActionResult> Index()
         {
-              return _context.TicketStatus != null ? 
-                          View(await _context.TicketStatus.ToListAsync()) :
+              return _context.TicketStatuses != null ? 
+                          View(await _context.TicketStatuses.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.TicketStatus'  is null.");
         }
 
         // GET: TicketStatuses/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.TicketStatus == null)
+            if (id == null || _context.TicketStatuses == null)
             {
                 return NotFound();
             }
 
-            var ticketStatus = await _context.TicketStatus
+            var ticketStatus = await _context.TicketStatuses
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketStatus == null)
             {
@@ -70,12 +70,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketStatuses/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.TicketStatus == null)
+            if (id == null || _context.TicketStatuses == null)
             {
                 return NotFound();
             }
 
-            var ticketStatus = await _context.TicketStatus.FindAsync(id);
+            var ticketStatus = await _context.TicketStatuses.FindAsync(id);
             if (ticketStatus == null)
             {
                 return NotFound();
@@ -121,12 +121,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketStatuses/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.TicketStatus == null)
+            if (id == null || _context.TicketStatuses == null)
             {
                 return NotFound();
             }
 
-            var ticketStatus = await _context.TicketStatus
+            var ticketStatus = await _context.TicketStatuses
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketStatus == null)
             {
@@ -141,14 +141,14 @@ namespace TOTP_BugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.TicketStatus == null)
+            if (_context.TicketStatuses == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.TicketStatus'  is null.");
             }
-            var ticketStatus = await _context.TicketStatus.FindAsync(id);
+            var ticketStatus = await _context.TicketStatuses.FindAsync(id);
             if (ticketStatus != null)
             {
-                _context.TicketStatus.Remove(ticketStatus);
+                _context.TicketStatuses.Remove(ticketStatus);
             }
             
             await _context.SaveChangesAsync();
@@ -157,7 +157,7 @@ namespace TOTP_BugTracker.Controllers
 
         private bool TicketStatusExists(int id)
         {
-          return (_context.TicketStatus?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.TicketStatuses?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

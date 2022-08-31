@@ -971,7 +971,6 @@ namespace TOTP_BugTracker.Data
                 var dbNotificationTypes = context.NotificationTypes.Select(c => c.Name).ToList();
                 await context.NotificationTypes.AddRangeAsync(notificationTypes.Where(c => !dbNotificationTypes.Contains(c.Name)));
                 await context.SaveChangesAsync();
-
             }
             catch (Exception ex)
             {

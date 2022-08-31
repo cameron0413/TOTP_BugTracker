@@ -22,20 +22,20 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketPriorities
         public async Task<IActionResult> Index()
         {
-              return _context.TicketPriority != null ? 
-                          View(await _context.TicketPriority.ToListAsync()) :
+              return _context.TicketPriorities != null ? 
+                          View(await _context.TicketPriorities.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.TicketPriority'  is null.");
         }
 
         // GET: TicketPriorities/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.TicketPriority == null)
+            if (id == null || _context.TicketPriorities == null)
             {
                 return NotFound();
             }
 
-            var ticketPriority = await _context.TicketPriority
+            var ticketPriority = await _context.TicketPriorities
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketPriority == null)
             {
@@ -70,12 +70,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketPriorities/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.TicketPriority == null)
+            if (id == null || _context.TicketPriorities == null)
             {
                 return NotFound();
             }
 
-            var ticketPriority = await _context.TicketPriority.FindAsync(id);
+            var ticketPriority = await _context.TicketPriorities.FindAsync(id);
             if (ticketPriority == null)
             {
                 return NotFound();
@@ -121,12 +121,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketPriorities/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.TicketPriority == null)
+            if (id == null || _context.TicketPriorities == null)
             {
                 return NotFound();
             }
 
-            var ticketPriority = await _context.TicketPriority
+            var ticketPriority = await _context.TicketPriorities
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketPriority == null)
             {
@@ -141,14 +141,14 @@ namespace TOTP_BugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.TicketPriority == null)
+            if (_context.TicketPriorities == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.TicketPriority'  is null.");
             }
-            var ticketPriority = await _context.TicketPriority.FindAsync(id);
+            var ticketPriority = await _context.TicketPriorities.FindAsync(id);
             if (ticketPriority != null)
             {
-                _context.TicketPriority.Remove(ticketPriority);
+                _context.TicketPriorities.Remove(ticketPriority);
             }
             
             await _context.SaveChangesAsync();
@@ -157,7 +157,7 @@ namespace TOTP_BugTracker.Controllers
 
         private bool TicketPriorityExists(int id)
         {
-          return (_context.TicketPriority?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.TicketPriorities?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

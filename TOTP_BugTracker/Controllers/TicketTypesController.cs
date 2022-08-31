@@ -22,20 +22,20 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketTypes
         public async Task<IActionResult> Index()
         {
-              return _context.TicketType != null ? 
-                          View(await _context.TicketType.ToListAsync()) :
+              return _context.TicketTypes != null ? 
+                          View(await _context.TicketTypes.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.TicketType'  is null.");
         }
 
         // GET: TicketTypes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.TicketType == null)
+            if (id == null || _context.TicketTypes == null)
             {
                 return NotFound();
             }
 
-            var ticketType = await _context.TicketType
+            var ticketType = await _context.TicketTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketType == null)
             {
@@ -70,12 +70,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketTypes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.TicketType == null)
+            if (id == null || _context.TicketTypes == null)
             {
                 return NotFound();
             }
 
-            var ticketType = await _context.TicketType.FindAsync(id);
+            var ticketType = await _context.TicketTypes.FindAsync(id);
             if (ticketType == null)
             {
                 return NotFound();
@@ -121,12 +121,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: TicketTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.TicketType == null)
+            if (id == null || _context.TicketTypes == null)
             {
                 return NotFound();
             }
 
-            var ticketType = await _context.TicketType
+            var ticketType = await _context.TicketTypes
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticketType == null)
             {
@@ -141,14 +141,14 @@ namespace TOTP_BugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.TicketType == null)
+            if (_context.TicketTypes == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.TicketType'  is null.");
             }
-            var ticketType = await _context.TicketType.FindAsync(id);
+            var ticketType = await _context.TicketTypes.FindAsync(id);
             if (ticketType != null)
             {
-                _context.TicketType.Remove(ticketType);
+                _context.TicketTypes.Remove(ticketType);
             }
             
             await _context.SaveChangesAsync();
@@ -157,7 +157,7 @@ namespace TOTP_BugTracker.Controllers
 
         private bool TicketTypeExists(int id)
         {
-          return (_context.TicketType?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.TicketTypes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

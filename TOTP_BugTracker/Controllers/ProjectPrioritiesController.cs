@@ -22,20 +22,20 @@ namespace TOTP_BugTracker.Controllers
         // GET: ProjectPriorities
         public async Task<IActionResult> Index()
         {
-              return _context.ProjectPriority != null ? 
-                          View(await _context.ProjectPriority.ToListAsync()) :
+              return _context.ProjectPriorities != null ? 
+                          View(await _context.ProjectPriorities.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.ProjectPriority'  is null.");
         }
 
         // GET: ProjectPriorities/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.ProjectPriority == null)
+            if (id == null || _context.ProjectPriorities == null)
             {
                 return NotFound();
             }
 
-            var projectPriority = await _context.ProjectPriority
+            var projectPriority = await _context.ProjectPriorities
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (projectPriority == null)
             {
@@ -70,12 +70,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: ProjectPriorities/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.ProjectPriority == null)
+            if (id == null || _context.ProjectPriorities == null)
             {
                 return NotFound();
             }
 
-            var projectPriority = await _context.ProjectPriority.FindAsync(id);
+            var projectPriority = await _context.ProjectPriorities.FindAsync(id);
             if (projectPriority == null)
             {
                 return NotFound();
@@ -121,12 +121,12 @@ namespace TOTP_BugTracker.Controllers
         // GET: ProjectPriorities/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.ProjectPriority == null)
+            if (id == null || _context.ProjectPriorities == null)
             {
                 return NotFound();
             }
 
-            var projectPriority = await _context.ProjectPriority
+            var projectPriority = await _context.ProjectPriorities
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (projectPriority == null)
             {
@@ -141,14 +141,14 @@ namespace TOTP_BugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.ProjectPriority == null)
+            if (_context.ProjectPriorities == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.ProjectPriority'  is null.");
             }
-            var projectPriority = await _context.ProjectPriority.FindAsync(id);
+            var projectPriority = await _context.ProjectPriorities.FindAsync(id);
             if (projectPriority != null)
             {
-                _context.ProjectPriority.Remove(projectPriority);
+                _context.ProjectPriorities.Remove(projectPriority);
             }
             
             await _context.SaveChangesAsync();
@@ -157,7 +157,7 @@ namespace TOTP_BugTracker.Controllers
 
         private bool ProjectPriorityExists(int id)
         {
-          return (_context.ProjectPriority?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.ProjectPriorities?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
