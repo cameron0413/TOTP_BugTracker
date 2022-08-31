@@ -4,6 +4,8 @@ using TOTP_BugTracker.Data;
 using TOTP_BugTracker.Models;
 using System.Reflection;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using TOTP_BugTracker.Services.Interfaces;
+using TOTP.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,7 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
     .AddDefaultTokenProviders();
 
 // Custom Services Below:
+builder.Services.AddScoped<IImageService, ImageService>();
 
 
 builder.Services.AddMvc();

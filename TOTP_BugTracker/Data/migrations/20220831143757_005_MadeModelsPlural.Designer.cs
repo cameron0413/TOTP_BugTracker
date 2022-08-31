@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TOTP_BugTracker.Data;
@@ -11,9 +12,10 @@ using TOTP_BugTracker.Data;
 namespace TOTP_BugTracker.data.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220831143757_005_MadeModelsPlural")]
+    partial class _005_MadeModelsPlural
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +36,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("ProjectsId");
 
-                    b.ToTable("BTUserProject", (string)null);
+                    b.ToTable("BTUserProject");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -278,7 +280,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.Invite", b =>
@@ -339,7 +341,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Invites", (string)null);
+                    b.ToTable("Invites");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.Notification", b =>
@@ -395,7 +397,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.NotificationType", b =>
@@ -411,7 +413,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.Project", b =>
@@ -464,7 +466,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("ProjectPriorityId");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.ProjectPriority", b =>
@@ -480,7 +482,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProjectPriorities", (string)null);
+                    b.ToTable("ProjectPriorities");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.Ticket", b =>
@@ -545,7 +547,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("TicketTypeId");
 
-                    b.ToTable("Tickets", (string)null);
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketAttachment", b =>
@@ -581,7 +583,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketAttachments", (string)null);
+                    b.ToTable("TicketAttachments");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketComment", b =>
@@ -612,7 +614,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketComments", (string)null);
+                    b.ToTable("TicketComments");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketHistory", b =>
@@ -651,7 +653,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketHistories", (string)null);
+                    b.ToTable("TicketHistories");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketPriority", b =>
@@ -667,7 +669,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketPriorities", (string)null);
+                    b.ToTable("TicketPriorities");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketStatus", b =>
@@ -683,7 +685,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketStatuses", (string)null);
+                    b.ToTable("TicketStatuses");
                 });
 
             modelBuilder.Entity("TOTP_BugTracker.Models.TicketType", b =>
@@ -699,7 +701,7 @@ namespace TOTP_BugTracker.data.migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketTypes", (string)null);
+                    b.ToTable("TicketTypes");
                 });
 
             modelBuilder.Entity("BTUserProject", b =>

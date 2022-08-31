@@ -28,6 +28,11 @@ namespace TOTP_BugTracker.Data
             return string.IsNullOrEmpty(databaseUrl) ? connectionString : BuildConnectionString(databaseUrl);
         }
 
+        public static DateTime GetPostgresDate(DateTime datetime)
+        {
+            return DateTime.SpecifyKind(datetime, DateTimeKind.Utc);
+        }
+
         public static string BuildConnectionString(string databaseUrl)
         {
             //Provides an object representation of a uniform resource identifier (URI) and easy access to the parts of the URI.
@@ -96,8 +101,8 @@ namespace TOTP_BugTracker.Data
                     new Company() { Name = "Company5", Description="This is default Company 5" }
                 };
 
-                var dbCompanies = context.Companies.Select(c => c.Name).ToList();
-                await context.Companies.AddRangeAsync(defaultcompanies.Where(c => !dbCompanies.Contains(c.Name)));
+                var dbCompanies = context.Companies!.Select(c => c.Name).ToList();
+                await context.Companies!.AddRangeAsync(defaultcompanies.Where(c => !dbCompanies.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
                 //Get company Ids
@@ -631,8 +636,8 @@ namespace TOTP_BugTracker.Data
                                                     new ProjectPriority() { Name =nameof(BTProjectPriorities.Urgent) },
                 };
 
-                var dbProjectPriorities = context.ProjectPriorities.Select(c => c.Name).ToList();
-                await context.ProjectPriorities.AddRangeAsync(projectPriorities.Where(c => !dbProjectPriorities.Contains(c.Name)));
+                var dbProjectPriorities = context.ProjectPriorities!.Select(c => c.Name).ToList();
+                await context.ProjectPriorities!.AddRangeAsync(projectPriorities.Where(c => !dbProjectPriorities.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
             }
@@ -650,10 +655,10 @@ namespace TOTP_BugTracker.Data
         {
 
             //Get project priority Ids
-            int priorityLow = context.ProjectPriorities.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Low))!.Id;
-            int priorityMedium = context.ProjectPriorities.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Medium))!.Id;
-            int priorityHigh = context.ProjectPriorities.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.High))!.Id;
-            int priorityUrgent = context.ProjectPriorities.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Urgent))!.Id;
+            int priorityLow = context.ProjectPriorities!.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Low))!.Id;
+            int priorityMedium = context.ProjectPriorities!.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Medium))!.Id;
+            int priorityHigh = context.ProjectPriorities!.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.High))!.Id;
+            int priorityUrgent = context.ProjectPriorities!.FirstOrDefault(p => p.Name == nameof(BTProjectPriorities.Urgent))!.Id;
 
             try
             {
@@ -710,8 +715,8 @@ namespace TOTP_BugTracker.Data
                      }
                 };
 
-                var dbProjects = context.Projects.Select(c => c.Name).ToList();
-                await context.Projects.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
+                var dbProjects = context.Projects!.Select(c => c.Name).ToList();
+                await context.Projects!.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
 
@@ -754,8 +759,8 @@ namespace TOTP_BugTracker.Data
                      new TicketType() { Name = nameof(BTTicketTypes.GeneralTask) }          // Ticket involves no software development but may involve tasks such as configuations, or hardware setup
                 };
 
-                var dbTicketTypes = context.TicketTypes.Select(c => c.Name).ToList();
-                await context.TicketTypes.AddRangeAsync(ticketTypes.Where(c => !dbTicketTypes.Contains(c.Name)));
+                var dbTicketTypes = context.TicketTypes!.Select(c => c.Name).ToList();
+                await context.TicketTypes!.AddRangeAsync(ticketTypes.Where(c => !dbTicketTypes.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
             }
@@ -780,8 +785,8 @@ namespace TOTP_BugTracker.Data
                     new TicketStatus() { Name = nameof(BTTicketStatuses.Resolved)  },           // Ticket remains assigned to the developer but work in now complete
                 };
 
-                var dbTicketStatuses = context.TicketStatuses.Select(c => c.Name).ToList();
-                await context.TicketStatuses.AddRangeAsync(ticketStatuses.Where(c => !dbTicketStatuses.Contains(c.Name)));
+                var dbTicketStatuses = context.TicketStatuses!.Select(c => c.Name).ToList();
+                await context.TicketStatuses!.AddRangeAsync(ticketStatuses.Where(c => !dbTicketStatuses.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
             }
@@ -806,8 +811,8 @@ namespace TOTP_BugTracker.Data
                                                     new TicketPriority() { Name = nameof(BTTicketPriorities.Urgent)},
                 };
 
-                var dbTicketPriorities = context.TicketPriorities.Select(c => c.Name).ToList();
-                await context.TicketPriorities.AddRangeAsync(ticketPriorities.Where(c => !dbTicketPriorities.Contains(c.Name)));
+                var dbTicketPriorities = context.TicketPriorities!.Select(c => c.Name).ToList();
+                await context.TicketPriorities!.AddRangeAsync(ticketPriorities.Where(c => !dbTicketPriorities.Contains(c.Name)));
                 context.SaveChanges();
 
             }
@@ -825,23 +830,23 @@ namespace TOTP_BugTracker.Data
         {
 
             //Get ticket type Ids
-            int typeNewDev = context.TicketTypes.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.NewDevelopment))!.Id;
-            int typeWorkTask = context.TicketTypes.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.WorkTask))!.Id;
-            int typeDefect = context.TicketTypes.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.Defect))!.Id;
-            int typeEnhancement = context.TicketTypes.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.Enhancement))!.Id;
-            int typeChangeRequest = context.TicketTypes.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.ChangeRequest))!.Id;
+            int typeNewDev = context.TicketTypes!.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.NewDevelopment))!.Id;
+            int typeWorkTask = context.TicketTypes!.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.WorkTask))!.Id;
+            int typeDefect = context.TicketTypes!.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.Defect))!.Id;
+            int typeEnhancement = context.TicketTypes!.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.Enhancement))!.Id;
+            int typeChangeRequest = context.TicketTypes!.FirstOrDefault(p => p.Name == nameof(BTTicketTypes.ChangeRequest))!.Id;
 
             //Get ticket priority Ids
-            int priorityLow = context.TicketPriorities.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Low))!.Id;
-            int priorityMedium = context.TicketPriorities.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Medium))!.Id;
-            int priorityHigh = context.TicketPriorities.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.High))!.Id;
-            int priorityUrgent = context.TicketPriorities.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Urgent))!.Id;
+            int priorityLow = context.TicketPriorities!.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Low))!.Id;
+            int priorityMedium = context.TicketPriorities!.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Medium))!.Id;
+            int priorityHigh = context.TicketPriorities!.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.High))!.Id;
+            int priorityUrgent = context.TicketPriorities!.FirstOrDefault(p => p.Name == nameof(BTTicketPriorities.Urgent))!.Id;
 
             //Get ticket status Ids
-            int statusNew = context.TicketStatuses.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.New))!.Id;
-            int statusDev = context.TicketStatuses.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Development))!.Id;
-            int statusTest = context.TicketStatuses.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Testing))!.Id;
-            int statusResolved = context.TicketStatuses.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Resolved))!.Id;
+            int statusNew = context.TicketStatuses!.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.New))!.Id;
+            int statusDev = context.TicketStatuses!.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Development))!.Id;
+            int statusTest = context.TicketStatuses!.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Testing))!.Id;
+            int statusResolved = context.TicketStatuses!.FirstOrDefault(p => p.Name == nameof(BTTicketStatuses.Resolved))!.Id;
 
             //Get admin Ids
             string company1AdminId = (await userManager.FindByEmailAsync("btadmin1@bugtracker.com"))!.Id;
@@ -945,8 +950,8 @@ namespace TOTP_BugTracker.Data
                 };
 
 
-                var dbTickets = context.Tickets.Select(c => c.Title).ToList();
-                await context.Tickets.AddRangeAsync(tickets.Where(c => !dbTickets.Contains(c.Title)));
+                var dbTickets = context.Tickets!.Select(c => c.Title).ToList();
+                await context.Tickets!.AddRangeAsync(tickets.Where(c => !dbTickets.Contains(c.Title)));
                 await context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -968,8 +973,8 @@ namespace TOTP_BugTracker.Data
                      new NotificationType() { Name = BTNotificationTypes.Ticket.ToString() }
                 };
 
-                var dbNotificationTypes = context.NotificationTypes.Select(c => c.Name).ToList();
-                await context.NotificationTypes.AddRangeAsync(notificationTypes.Where(c => !dbNotificationTypes.Contains(c.Name)));
+                var dbNotificationTypes = context.NotificationTypes!.Select(c => c.Name).ToList();
+                await context.NotificationTypes!.AddRangeAsync(notificationTypes.Where(c => !dbNotificationTypes.Contains(c.Name)));
                 await context.SaveChangesAsync();
             }
             catch (Exception ex)
