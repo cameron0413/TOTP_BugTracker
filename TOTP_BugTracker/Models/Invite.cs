@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace TOTP_BugTracker.Models
 {
@@ -7,9 +8,11 @@ namespace TOTP_BugTracker.Models
         public int Id { get; set; }
 
         [DataType(DataType.Date)]
+        [DisplayName("Invitation Date")]
         public DateTime InviteDate { get; set; }
 
         [DataType(DataType.Date)]
+        [DisplayName("Join Date")]
         public DateTime JoinDate { get; set; }
         public Guid CompanyToken { get; set; }
         public int CompanyId { get; set; }
@@ -20,12 +23,15 @@ namespace TOTP_BugTracker.Models
         public string? InviteeId { get; set; }
 
         [Required]
+        [DisplayName("Invitee Email")]
         public string? InviteeEmail { get; set; }
 
         [Required]
+        [DisplayName("Invitee First Name")]
         public string? InviteeFirstName { get; set; }
 
         [Required]
+        [DisplayName("Invitee Last Name")]
         public string? InviteeLastName { get; set; }
         public string? Message { get; set; }
         public bool IsValid { get; set; }

@@ -9,31 +9,96 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TOTP_BugTracker.Data;
 using TOTP_BugTracker.Models;
+using TOTP_BugTracker.Models.Enums;
+using TOTP_BugTracker.Models.ViewModels;
 using TOTP_BugTracker.Services.Interfaces;
+using X.PagedList;
 
 namespace TOTP_BugTracker.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly UserManager<BTUser> _userManager;
+        private readonly IProjectService _projectService;
+        private readonly IRolesService _rolesService;
 
         public ProjectsController(ApplicationDbContext context,
                                   IImageService imageService,
-                                  UserManager<BTUser> userManager)
+                                  UserManager<BTUser> userManager,
+                                  IProjectService projectService,
+                                  IRolesService rolesService)
         {
             _context = context;
             _imageService = imageService;
             _userManager = userManager;
+            _projectService = projectService;
+            _rolesService = rolesService;
 
         }
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Projects!.Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
+            List<Project> projects = await _context.Projects!
+                                               .Where(p => p.Archived == false)
+                                               .Include(p => p.Company)
+                                               .Include(p => p.ProjectPriority)
+                                               .ToListAsync();
+            
+            return View(projects);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignProjectManager(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+
+
+            AssignPMViewModel model = new();
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+
+            model.Project = await _projectService.GetProjectByIdAsync(id.Value);
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId),"Id","FullName");
+
+            return View(model);
+        }
+
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignProjectManager(AssignPMViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.PMID))
+            {
+                Project project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+
+                BTUser projectManager = await _context.Users.FindAsync(model.PMID);
+
+                project.Members.Add(projectManager);
+
+                return RedirectToAction(nameof(Index));
+            }
+            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id});
+        }
+
+        public async Task<IActionResult> ArchivedIndex()
+        {
+            List<Project> archivedProjects = await _context.Projects!.Where(p => p.Archived == true).Include(p => p.Company)
+                                               .Include(p => p.ProjectPriority)
+                                               .ToListAsync();
+
+            return View(archivedProjects);
         }
 
         // GET: Projects/Details/5
@@ -56,10 +121,14 @@ namespace TOTP_BugTracker.Controllers
             return View(project);
         }
 
-        
+        [Authorize(Roles = "Admin, ProjectManager")]
         // GET: Projects/Create
         public IActionResult Create()
         {
+
+            // To Do: Abstract the use of _context
+
+
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
             return View(new Project());
         }
@@ -70,24 +139,36 @@ namespace TOTP_BugTracker.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFileName,Archived")] Project project)
+        public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFormFile")] Project project)
         {
             if (ModelState.IsValid)
             {
+
+                // TO DO: Make companyId retrieval more efficient
                 // get company id
                 project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
 
                 project.Created = DataUtility.GetPostgresDate(DateTime.Now);
+                project.StartDate = DataUtility.GetPostgresDate(project.StartDate);
+                project.EndDate = DataUtility.GetPostgresDate(project.EndDate);
+
+                if (project.ImageFormFile != null)
+                {
+                    project.ImageData = await _imageService.ConvertFileToByteArrayAsync(project.ImageFormFile);
+                    project.ImageType = project.ImageFormFile.ContentType;
+                }
+
+
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.Set<ProjectPriority>(), "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
-
+        [Authorize]
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -102,16 +183,17 @@ namespace TOTP_BugTracker.Controllers
                 return NotFound();
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.Set<ProjectPriority>(), "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
         // POST: Projects/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFileName,Archived")] Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFormFile")] Project project)
         {
             if (id != project.Id)
             {
@@ -122,6 +204,17 @@ namespace TOTP_BugTracker.Controllers
             {
                 try
                 {
+
+                    project.Created = DateTime.SpecifyKind(project.Created, DateTimeKind.Utc);
+                    project.StartDate = DataUtility.GetPostgresDate(project.StartDate);
+                    project.EndDate = DataUtility.GetPostgresDate(project.EndDate);
+
+                    if (project.ImageFormFile != null)
+                    {
+                        project.ImageData = await _imageService.ConvertFileToByteArrayAsync(project.ImageFormFile);
+                        project.ImageType = project.ImageFormFile.ContentType;
+                    }
+
                     _context.Update(project);
                     await _context.SaveChangesAsync();
                 }
@@ -139,12 +232,12 @@ namespace TOTP_BugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.Set<ProjectPriority>(), "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.Set<ProjectPriority>(), "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
-        // GET: Projects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        // GET: Projects/Archive/5
+        public async Task<IActionResult> Archive(int? id)
         {
             if (id == null || _context.Projects == null)
             {
@@ -163,10 +256,10 @@ namespace TOTP_BugTracker.Controllers
             return View(project);
         }
 
-        // POST: Projects/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: Projects/Archive/5
+        [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> ArchiveConfirmed(int id)
         {
             if (_context.Projects == null)
             {
@@ -175,16 +268,54 @@ namespace TOTP_BugTracker.Controllers
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
             {
-                _context.Projects.Remove(project);
+                project.Archived = true;
             }
-            
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Restore(int? id)
+        {
+            if (id == null || _context.Projects == null)
+            {
+                return NotFound();
+            }
+
+            var project = await _context.Projects
+                .Include(p => p.Company)
+                .Include(p => p.ProjectPriority)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (project == null)
+            {
+                return NotFound();
+            }
+
+            return View(project);
+        }
+
+        // POST: Projects/Restore/5
+        [HttpPost, ActionName("Restore")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestoreConfirmed(int id)
+        {
+            if (_context.Projects == null)
+            {
+                return Problem("Entity set 'ApplicationDbContext.Project'  is null.");
+            }
+            var project = await _context.Projects.FindAsync(id);
+            if (project != null)
+            {
+                project.Archived = false;
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool ProjectExists(int id)
         {
-          return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

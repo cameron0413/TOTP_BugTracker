@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace TOTP_BugTracker.Models
 {
@@ -9,9 +10,11 @@ namespace TOTP_BugTracker.Models
         public int TicketId { get; set; }
 
         [Required]
+        [DisplayName("Sender")]
         public string? SenderId { get; set; }
 
         [Required]
+        [DisplayName("Recipient")]
         public string? RecipientId { get; set; }
 
         [Required]
@@ -24,7 +27,10 @@ namespace TOTP_BugTracker.Models
 
         [DataType(DataType.Date)]
         public DateTime Created { get; set; }
+        [DisplayName("Notification Type")]
         public int NotificationTypeId { get; set; }
+
+        [DisplayName("Read")]
         public bool HasBeenViewed { get; set; }
 
         // Navigation Properties

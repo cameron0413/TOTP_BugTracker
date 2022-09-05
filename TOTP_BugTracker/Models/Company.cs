@@ -1,9 +1,11 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TOTP_BugTracker.Models
 {
+    [Authorize]
     public class Company
     {
         public int Id { get; set; }
@@ -24,6 +26,7 @@ namespace TOTP_BugTracker.Models
         //Property for passing file information from the form(html) to the post.
         //Also not saved in the database via [NotMapped] attribute
         [NotMapped]
+        [DisplayName("Company Logo")]
         public virtual IFormFile? ImageFormFile { get; set; }
 
         // Navigation Properties

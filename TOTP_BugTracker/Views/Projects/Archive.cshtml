@@ -1,12 +1,12 @@
 ﻿@model TOTP_BugTracker.Models.Project
-@using TOTP_BugTracker.Enums;
-@using TOTP_BugTracker.Services.Interfaces;
-@inject IImageService _ImageService;
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Archive";
 }
-<h1>Details</h1>
+
+<h1>Archive Project</h1>
+
+<h3>Are you sure you want to archive this?</h3>
 <div>
     <h4>Project</h4>
     <hr />
@@ -54,6 +54,12 @@
             @Html.DisplayFor(model => model.ImageType)
         </dd>
         <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ImageFileName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ImageFileName)
+        </dd>
+        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Archived)
         </dt>
         <dd class = "col-sm-10">
@@ -72,13 +78,10 @@
             @Html.DisplayFor(model => model.ProjectPriority.Id)
         </dd>
     </dl>
-</div>
-@foreach(BTUser btUser in Model.Members)
-{
-    <p>@btUser.FullName</p>
-    <img class="img-fluid" src="@_ImageService.ConvertByteArrayToFile(btUser.ImageData!,btUser.ImageType!,(int)DefaultImage.Project)" alt="Post Images">
-}
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    
+    <form asp-action="Archive">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Archive" class="btn btn-danger" /> |
+        <a asp-action="Index">Back to List</a>
+    </form>
 </div>
