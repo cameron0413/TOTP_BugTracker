@@ -65,11 +65,12 @@ namespace TOTP_BugTracker.Controllers
 
             int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
-
             model.Project = await _projectService.GetProjectByIdAsync(id.Value);
 
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
             // Service Call to RoleService
-            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId),"Id","FullName");
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId),"Id","FullName", currentPMId);
 
             return View(model);
         }
@@ -81,14 +82,28 @@ namespace TOTP_BugTracker.Controllers
         {
             if (!string.IsNullOrEmpty(model.PMID))
             {
-                Project project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
-
-                BTUser projectManager = await _context.Users.FindAsync(model.PMID);
-
-                project.Members.Add(projectManager);
+                await _projectService.AddProjectManagerAsync(model.PMID, model.Project!.Id);
 
                 return RedirectToAction(nameof(Index));
             }
+
+            ModelState.AddModelError("PMID", "No Project Manager chosen! Please select a PM.");
+
+
+            //Get companyId
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+            await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
+
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id});
         }
 
@@ -311,6 +326,15 @@ namespace TOTP_BugTracker.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> UnassignedProjects(int companyId)
+        {
+            companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            IEnumerable<Project> projects = await _projectService.GetUnassignedProjectsAsync(companyId);
+
+            return View(projects);
         }
 
         private bool ProjectExists(int id)

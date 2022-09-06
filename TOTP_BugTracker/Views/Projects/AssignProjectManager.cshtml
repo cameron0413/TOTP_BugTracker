@@ -9,6 +9,7 @@
 <div class="row card">
     <div class="col-md-4">
         <form method="post" asp-action="AssignProjectManager" asp-controller="Projects">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Project!.Id" />
             <h2>@Model.Project?.Name </h2>
             <p>@Model.Project?.Description </p>
@@ -17,8 +18,9 @@
                 <select asp-for="PMID" class="form-control" asp-items="@Model.PMList">
                     <option></option>
                 </select>
-                <input type="submit" value="Assign" class="btn btn-primary" />
+                <span asp-validation-for="PMID" class="text-danger"></span>
             </div>
+            <input type="submit" value="Assign" class="btn btn-primary" />
         </form>
     </div>
 </div>
