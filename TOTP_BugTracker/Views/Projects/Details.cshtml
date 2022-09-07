@@ -2,6 +2,7 @@
 @using TOTP_BugTracker.Enums;
 @using TOTP_BugTracker.Services.Interfaces;
 @inject IImageService _ImageService;
+@inject IRolesService _RolesService;
 
 @{
     ViewData["Title"] = "Details";
@@ -11,69 +12,69 @@
     <h4>Project</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Created)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Created)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.StartDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.StartDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EndDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.EndDate)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ImageData)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ImageData)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ImageType)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ImageType)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Archived)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Archived)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Company)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Company.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ProjectPriority)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ProjectPriority.Id)
         </dd>
     </dl>
 </div>
-@foreach(BTUser btUser in Model.Members)
+@foreach (BTUser btUser in Model.Members)
 {
     <p>@btUser.FullName</p>
     <img class="img-fluid" src="@_ImageService.ConvertByteArrayToFile(btUser.ImageData!,btUser.ImageType!,(int)DefaultImage.Project)" alt="Post Images">
@@ -82,3 +83,104 @@
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+<h3>Tickets:</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Title
+            </th>
+            <th>
+                Description
+            </th>
+            <th>
+                Created Date
+            </th>
+            <th>
+                Last Updated
+            </th>
+            <th>
+                Archived?
+            </th>
+            <th>
+                Archived By Project?
+            </th>
+            <th>
+                Project
+            </th>
+            <th>
+                Ticket Priority
+            </th>
+            <th>
+                Ticket Type
+            </th>
+            <th>
+                Ticket Status
+            </th>
+            <th>
+                Developer
+            </th>
+            <th>
+                Submitter
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ticket in Model.Tickets)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Created)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Updated)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Archived)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.ArchivedByProject)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.Project.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.TicketPriority.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.TicketType.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.TicketStatus.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.DeveloperUser.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => ticket.SubmitterUser.Id)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@ticket.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@ticket.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@ticket.Id">Delete</a> |
+                    @{
+                        if ((User.IsInRole("ProjectManager")) || (User.IsInRole("Admin")))
+                        {
+                            <a asp-controller="Tickets" asp-action="AssignDev" asp-route-id="@ticket.Id">Assign Dev</a>
+                        }
+
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

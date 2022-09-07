@@ -83,7 +83,6 @@ namespace TOTP_BugTracker.Controllers
             if (!string.IsNullOrEmpty(model.PMID))
             {
                 await _projectService.AddProjectManagerAsync(model.PMID, model.Project!.Id);
-
                 return RedirectToAction(nameof(Index));
             }
 
@@ -192,6 +191,20 @@ namespace TOTP_BugTracker.Controllers
                 return NotFound();
             }
 
+
+            AssignPMViewModel model = new();
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(id.Value);
+
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+
+
             var project = await _context.Projects.FindAsync(id);
             if (project == null)
             {
@@ -208,7 +221,7 @@ namespace TOTP_BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFormFile")] Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Created,Description,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFormFile")] Project project)
         {
             if (id != project.Id)
             {
@@ -220,7 +233,7 @@ namespace TOTP_BugTracker.Controllers
                 try
                 {
 
-                    project.Created = DateTime.SpecifyKind(project.Created, DateTimeKind.Utc);
+                    project.Created = DataUtility.GetPostgresDate(project.Created);
                     project.StartDate = DataUtility.GetPostgresDate(project.StartDate);
                     project.EndDate = DataUtility.GetPostgresDate(project.EndDate);
 
@@ -261,6 +274,7 @@ namespace TOTP_BugTracker.Controllers
 
             var project = await _context.Projects
                 .Include(p => p.Company)
+                .Include(p => p.Tickets)
                 .Include(p => p.ProjectPriority)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)
@@ -284,6 +298,11 @@ namespace TOTP_BugTracker.Controllers
             if (project != null)
             {
                 project.Archived = true;
+
+                foreach (Ticket ticket in project.Tickets)
+                {
+                    ticket.ArchivedByProject = true;
+                }
             }
 
             await _context.SaveChangesAsync();
@@ -299,6 +318,7 @@ namespace TOTP_BugTracker.Controllers
 
             var project = await _context.Projects
                 .Include(p => p.Company)
+                .Include(p => p.Tickets)
                 .Include(p => p.ProjectPriority)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)
@@ -322,6 +342,11 @@ namespace TOTP_BugTracker.Controllers
             if (project != null)
             {
                 project.Archived = false;
+
+                foreach (Ticket ticket in project.Tickets)
+                {
+                    ticket.ArchivedByProject = false;
+                }
             }
 
             await _context.SaveChangesAsync();

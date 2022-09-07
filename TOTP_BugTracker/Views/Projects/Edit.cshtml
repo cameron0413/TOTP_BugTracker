@@ -2,9 +2,13 @@
 @using TOTP_BugTracker.Enums;
 @using TOTP_BugTracker.Services.Interfaces;
 @inject IImageService _ImageService;
+@using TOTP_BugTracker.Models.ViewModels;
 
 @{
     ViewData["Title"] = "Edit";
+
+    AssignPMViewModel viewModel = new();
+
 }
 
 <h1>Edit</h1>
@@ -26,6 +30,10 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input type="hidden" asp-for="CompanyId" />
+            <input type="hidden" asp-for="Created" />
+            <input type="hidden" asp-for="ImageData" />
+            <input type="hidden" asp-for="ImageType" />
+            <input type="hidden" asp-for="Archived" />
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -58,6 +66,26 @@
             </div>
             <div class="form-group">
                 <img id="imageData" class="img-fluid img-thumbnail" style="width:100px;height:80px" src="@_ImageService.ConvertByteArrayToFile(Model.ImageData!,Model.ImageType!,(int)DefaultImage.Project)" />
+            </div>
+            <div class="form-group">
+                @if (User.IsInRole("Admin"))
+                {
+                    <form method="post" asp-action="AssignProjectManager" asp-controller="Projects">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="@Model.Id" />
+                        <h2>@viewModel.Project?.Name </h2>
+                        <p>@viewModel.Project?.Description </p>
+                        <div class="form-group">
+                            <label class="control-label">Select Project Manager</label>
+                            <select asp-for="@viewModel.PMID" class="form-control" asp-items="@viewModel.PMList">
+                                <option></option>
+                            </select>
+                            <span asp-validation-for="@viewModel.PMID" class="text-danger"></span>
+                        </div>
+                        <input type="submit" value="Assign" class="btn btn-primary" />
+                    </form>
+                }
+
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

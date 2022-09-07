@@ -66,7 +66,9 @@ namespace TOTP_BugTracker.Services
         }
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
-            Project project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
+            Project project = await _context.Projects
+                                            .Include(p => p.Members)
+                                            .FirstOrDefaultAsync(p => p.Id == projectId);
 
             return project;
         }
@@ -148,7 +150,7 @@ namespace TOTP_BugTracker.Services
 
                 try
                 {
-                    Project? project = await GetProjectByIdAsync(projectId);
+                    //Project? project = await GetProjectByIdAsync(projectId);
                     await AddUserToProjectAsync(selectedPM!, projectId);
 
                     return true;
@@ -260,23 +262,31 @@ namespace TOTP_BugTracker.Services
 
             Project project = await GetProjectByIdAsync(projectId);
 
+            bool onProject = project.Members.Any(m => m.Id == user.Id);
+
 
             try
             {
-                project.Members.Add(user);
+                if (!onProject)
+                {
+                    project.Members.Add(user);
 
-                await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
+
+                    return true;
+
+                }
 
 
 
-                return true;
+                return false;
             }
             catch (Exception)
             {
 
-                return false;
+                throw;
             }
-            
+
         }
 
         public Task<bool> ProjectHasPMAsync(int projectId)

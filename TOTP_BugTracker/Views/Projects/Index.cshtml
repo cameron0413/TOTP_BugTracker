@@ -7,10 +7,11 @@
 
 @{
     ViewData["Title"] = "Index";
+
 }
 
 <h1>Index</h1>
-
+<div class="container">
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -69,9 +70,16 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.EndDate)
                 </td>
-                <td>
-                    @await _ProjectService.GetProjectManagerAsync(item.Id)
-                </td>
+                @{
+                    BTUser projectManager = await _ProjectService.GetProjectManagerAsync(item.Id)!;
+                    if (projectManager != null)
+                    {
+                        <td>@projectManager.FullName</td>
+                    } else
+                    {
+                        <td><a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a></td>
+                    }
+                }
                 <td>
                     <img class="img-fluid" src="@_ImageService.ConvertByteArrayToFile(item.ImageData!,item.ImageType!,(int)DefaultImage.Project)" alt="Post Images">
                 </td>
@@ -85,10 +93,13 @@
                     @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
                 </td>
                 <td>
-                    |<a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                    |<a asp-action="Details" asp-route-id="@item.Id">Details</a>
-                    |<a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
-                    |<a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>|
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>|
+                    <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>|
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a>
+                    }
                 </td>
             </tr>
         }
@@ -96,3 +107,4 @@
 </table>
 
 <a asp-action="ArchivedIndex">View archived items</a>
+</div>

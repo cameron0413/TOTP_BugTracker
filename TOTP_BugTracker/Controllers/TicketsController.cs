@@ -21,20 +21,31 @@ namespace TOTP_BugTracker.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
         private readonly IProjectService _projectService;
+        private readonly ITicketService _ticketService;
 
         public TicketsController(ApplicationDbContext context,
                                  UserManager<BTUser> userManager,
-                                 IProjectService projectService)
+                                 IProjectService projectService,
+                                 ITicketService ticketService)
         {
             _context = context;
             _userManager = userManager;
             _projectService = projectService;
+            _ticketService = ticketService;
         }
 
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Tickets!.Include(t => t.DeveloperUser).Include(t => t.Project).Include(t => t.SubmitterUser).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
+            var applicationDbContext = _context.Tickets!
+                                               .Where(t => !t.Archived && !t.ArchivedByProject)
+                                               .Include(t => t.DeveloperUser)
+                                               .Include(t => t.Project)
+                                               .Include(t => t.SubmitterUser)
+                                               .Include(t => t.TicketPriority)
+                                               .Include(t => t.TicketStatus)
+                                               .Include(t => t.TicketType);
+
             return View(await applicationDbContext.ToListAsync());
         }
 

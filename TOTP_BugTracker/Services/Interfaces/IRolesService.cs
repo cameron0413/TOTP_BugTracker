@@ -6,5 +6,7 @@ namespace TOTP_BugTracker.Services.Interfaces
     {
         public Task<List<BTUser>> GetUsersInRoleAsync(string roleName, int companyId);
         public Task<bool> IsUserInRoleAsync(BTUser member, string roleName);
+        public Task<string> GetUserIdAsync(BTUser user);
+        public Task<BTUser> GetUserAsync(string userId);
     }
 }
