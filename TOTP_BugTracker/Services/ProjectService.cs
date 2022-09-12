@@ -29,6 +29,7 @@ namespace TOTP_BugTracker.Services
 
             return projects;
         }
+
         public async Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId)
         {
             var projects = await _context.Projects!
@@ -40,6 +41,19 @@ namespace TOTP_BugTracker.Services
 
             return projects;
         }
+
+        public async Task<IEnumerable<Project>> GetIEnumOfAllProjectsByCompanyIdAsync(int companyId)
+        {
+            IEnumerable<Project> projects = await _context.Projects!
+                                         .Where(p => p.Archived == false && p.CompanyId == companyId)
+                                         .Include(p => p.Company)
+                                         .Include(p => p.ProjectPriority)
+                                         .ToListAsync();
+
+
+            return projects;
+        }
+
         public async Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId)
         {
             var projects = await _context.Projects
@@ -50,6 +64,7 @@ namespace TOTP_BugTracker.Services
 
             return projects;
         }
+
         public async Task<List<Project>> GetArchivedProjectsWithoutCompanyIdAsync()
         {
             var projects = await _context.Projects
@@ -60,10 +75,14 @@ namespace TOTP_BugTracker.Services
 
             return projects;
         }
+
+        #region Add project to company
         public async Task AddProjectAsync(Project project)
         {
             _context.Add(project);
         }
+        #endregion
+
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
             Project project = await _context.Projects
@@ -72,10 +91,12 @@ namespace TOTP_BugTracker.Services
 
             return project;
         }
+
         public async Task UpdateProjectAsync(Project project)
         {
             _context.Update(project);
         }
+
         public async Task ArchiveProjectAsync(int projectId)
         {
             Project project = await GetProjectByIdAsync(projectId);
@@ -93,6 +114,7 @@ namespace TOTP_BugTracker.Services
             await _context.SaveChangesAsync();
 
         }
+
         public async Task RestoreProjectAsync(int projectId)
         {
 

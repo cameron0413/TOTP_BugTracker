@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TOTP_BugTracker.Data;
+using TOTP_BugTracker.Extensions;
 using TOTP_BugTracker.Models;
 using TOTP_BugTracker.Models.Enums;
 using TOTP_BugTracker.Models.ViewModels;
@@ -42,14 +43,23 @@ namespace TOTP_BugTracker.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            List<Project> projects = await _context.Projects!
-                                               .Where(p => p.Archived == false)
-                                               .Include(p => p.Company)
-                                               .Include(p => p.ProjectPriority)
-                                               .ToListAsync();
-            
+            int companyId = User.Identity.GetCompanyId();
+
+            List<Project> projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
+
+
+            //List<Project> projects = await _context.Projects!
+            //                                   .Where(p => p.Archived == false)
+            //                                   .Include(p => p.Company)
+            //                                   .Include(p => p.ProjectPriority)
+            //                                   .ToListAsync();
+
             return View(projects);
         }
+
+
+
+
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignProjectManager(int? id)
@@ -70,12 +80,15 @@ namespace TOTP_BugTracker.Controllers
             string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
 
             // Service Call to RoleService
-            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId),"Id","FullName", currentPMId);
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
 
             return View(model);
         }
 
-        
+
+
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignProjectManager(AssignPMViewModel model)
@@ -103,7 +116,7 @@ namespace TOTP_BugTracker.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id});
+            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id });
         }
 
         public async Task<IActionResult> ArchivedIndex()
@@ -135,17 +148,35 @@ namespace TOTP_BugTracker.Controllers
             return View(project);
         }
 
+
+
+
+
         [Authorize(Roles = "Admin, ProjectManager")]
         // GET: Projects/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
 
             // To Do: Abstract the use of _context
+            AssignPMViewModel model = new();
 
+            Project project = model.Project!;
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName");
 
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
-            return View(new Project());
+            return View(model);
         }
+
+
+
+
+
+
 
         // POST: Projects/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
@@ -153,34 +184,42 @@ namespace TOTP_BugTracker.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageData,ImageType,ImageFormFile")] Project project)
+        public async Task<IActionResult> Create(AssignPMViewModel model)
         {
             if (ModelState.IsValid)
             {
 
                 // TO DO: Make companyId retrieval more efficient
                 // get company id
-                project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
+                model.Project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
 
-                project.Created = DataUtility.GetPostgresDate(DateTime.Now);
-                project.StartDate = DataUtility.GetPostgresDate(project.StartDate);
-                project.EndDate = DataUtility.GetPostgresDate(project.EndDate);
+                model.Project.Created = DataUtility.GetPostgresDate(DateTime.Now);
+                model.Project.StartDate = DataUtility.GetPostgresDate(model.Project.StartDate);
+                model.Project.EndDate = DataUtility.GetPostgresDate(model.Project.EndDate);
 
-                if (project.ImageFormFile != null)
+                if (model.Project.ImageFormFile != null)
                 {
-                    project.ImageData = await _imageService.ConvertFileToByteArrayAsync(project.ImageFormFile);
-                    project.ImageType = project.ImageFormFile.ContentType;
+                    model.Project.ImageData = await _imageService.ConvertFileToByteArrayAsync(model.Project.ImageFormFile);
+                    model.Project.ImageType = model.Project.ImageFormFile.ContentType;
                 }
 
+                await _projectService.AddProjectAsync(model.Project);
 
-                _context.Add(project);
-                await _context.SaveChangesAsync();
+                int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+                string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+                // Service Call to RoleService
+                model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+                
+                //await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
-            return View(project);
+            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", model.Project.CompanyId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", model.Project.ProjectPriorityId);
+            return View(model.Project);
         }
         [Authorize]
         // GET: Projects/Edit/5
@@ -203,9 +242,8 @@ namespace TOTP_BugTracker.Controllers
             // Service Call to RoleService
             model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
 
-
-
             var project = await _context.Projects.FindAsync(id);
+
             if (project == null)
             {
                 return NotFound();
@@ -232,7 +270,6 @@ namespace TOTP_BugTracker.Controllers
             {
                 try
                 {
-
                     project.Created = DataUtility.GetPostgresDate(project.Created);
                     project.StartDate = DataUtility.GetPostgresDate(project.StartDate);
                     project.EndDate = DataUtility.GetPostgresDate(project.EndDate);
@@ -308,6 +345,65 @@ namespace TOTP_BugTracker.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ManageMembers(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+
+
+            AssignPMViewModel model = new();
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(id.Value);
+
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+            return View(model);
+        }
+
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ManageMembers(AssignPMViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.PMID))
+            {
+                await _projectService.AddProjectManagerAsync(model.PMID, model.Project!.Id);
+                return RedirectToAction(nameof(Index));
+            }
+
+            ModelState.AddModelError("PMID", "No Project Manager chosen! Please select a PM.");
+
+
+            //Get companyId
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+
+            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
+
+            // Service Call to RoleService
+            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+
+            await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id });
+        }
+
 
         public async Task<IActionResult> Restore(int? id)
         {

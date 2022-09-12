@@ -12,6 +12,7 @@ namespace TOTP_BugTracker.Services.Interfaces
         public Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId);
         public Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId);
         public Task<List<Project>> GetArchivedProjectsWithoutCompanyIdAsync();
+        public Task<IEnumerable<Project>> GetIEnumOfAllProjectsByCompanyIdAsync(int companyId);
         public Task<BTUser>? GetProjectManagerAsync(int projectId);
         public Task<List<Project>> GetProjectsWithoutCompanyIdAsync();
         public Task<Project> GetProjectByIdAsync(int projectId);

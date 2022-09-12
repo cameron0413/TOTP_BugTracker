@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using TOTP_BugTracker.Services.Interfaces;
 using TOTP.Services;
 using TOTP_BugTracker.Services;
+using TOTP_BugTracker.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
     .AddDefaultUI()
     .AddDefaultTokenProviders();
 
@@ -29,7 +31,9 @@ builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IRolesService, RolesService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
-
+builder.Services.AddScoped<IEmailSender, EmailService>();
+builder.Services.AddScoped<IInviteService, InviteService>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 
 builder.Services.AddMvc();
 

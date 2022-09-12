@@ -1,5 +1,29 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model TOTP_BugTracker.Models.ViewModels.AssignTicketDevViewModel
+
 @{
+    ViewData["Title"] = "Assign Developer";
 }
+<h1>Project : @Model.Ticket?.Title</h1>
+<h4>Assign Project Manager</h4>
+<hr />
+<div class="row card">
+    <div class="col-md-4">
+        <form method="post" asp-action="AssignDev" asp-controller="Tickets">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="@Model.Ticket!.Id" />
+            <h2>@Model.Ticket?.Title </h2>
+            <p>@Model.Ticket?.Description </p>
+            <div class="form-group">
+                <label class="control-label">Select Project Manager</label>
+                <select asp-for="DevId" class="form-control" asp-items="@Model.DevList">
+                    <option></option>
+                </select>
+                <span asp-validation-for="DevId" class="text-danger"></span>
+            </div>
+            <input type="submit" value="Assign" class="btn btn-primary" />
+        </form>
+    </div>
+</div>
+<div>
+    <a asp-action="UnassignedProjects">Back to List</a>
+</div>
