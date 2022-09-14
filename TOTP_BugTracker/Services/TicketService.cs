@@ -30,22 +30,12 @@ namespace TOTP_BugTracker.Services
             _userManager = userManager;
         }
 
-        public async Task AddTicketAsync(Ticket ticket)
+        public Task AddTicketAsync(Ticket ticket)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> AddTicketDevAsync(string userId, int projectId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> AddUserToTicketAsync(BTUser user, int projectId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task ArchiveTicketAsync(int projectId)
+        public Task AddTicketCommentAsync(TicketComment comment, int ticketId)
         {
             throw new NotImplementedException();
         }
@@ -54,7 +44,7 @@ namespace TOTP_BugTracker.Services
         {
 
             List<Ticket> tickets = await _context.Tickets!
-                                                 .Where(t => !t.Archived && !t.ArchivedByProject && t.Project.CompanyId == companyId)
+                                                 .Where(t => !t.Archived && !t.ArchivedByProject && t.Project!.CompanyId == companyId)
                                                  .Include(t => t.DeveloperUser)
                                                  .Include(t => t.Project)
                                                  .Include(t => t.SubmitterUser)
@@ -84,9 +74,34 @@ namespace TOTP_BugTracker.Services
             return tickets;
         }
 
+        public async Task<List<Ticket>> GetAllTicketsRelatedToUserAsync(string userId)
+        {
+            try
+            {
+                List<Ticket> relatedTickets = await _context.Tickets.Where(t => t.DeveloperUserId == userId || 
+                                                                           t.SubmitterUserId == userId || 
+                                                                           t.Project!.Members.Any(m => m.Id == userId))
+                                                                    .Include(t => t.DeveloperUser)
+                                                                    .Include(t => t.Project)
+                                                                    .Include(t => t.SubmitterUser)
+                                                                    .Include(t => t.TicketPriority)
+                                                                    .Include(t => t.TicketStatus)
+                                                                    .Include(t => t.TicketType)
+                                                                    .ToListAsync();
+
+                return relatedTickets;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<List<Ticket>> GetArchivedTicketsByCompanyIdAsync(int companyId)
         {
-            List<Ticket> archivedTickets = await _context.Tickets!.Where(t => t.Archived == true).Include(t => t.Project)
+
+            List<Ticket> archivedTickets = await _context.Tickets!.Where(t => t.Archived == true || t.ArchivedByProject == true && t.Project!.CompanyId == companyId).Include(t => t.Project)
                                                .Include(t => t.TicketPriority)
                                                .ToListAsync();
 
@@ -95,7 +110,25 @@ namespace TOTP_BugTracker.Services
 
         public async Task<List<Ticket>> GetArchivedTicketsByProjectIdAsync(int projectId)
         {
-            throw new NotImplementedException();
+            try
+            {
+                List<Ticket> archivedTicketsFromProject = await _context.Tickets.Where(t => t.Archived == true || t.ArchivedByProject == true && t.ProjectId == projectId)
+                                                                                .Include(t => t.Project)
+                                                                                .Include(t => t.DeveloperUser)
+                                                                                .Include(t => t.Project)
+                                                                                .Include(t => t.SubmitterUser)
+                                                                                .Include(t => t.TicketPriority)
+                                                                                .Include(t => t.TicketStatus)
+                                                                                .Include(t => t.TicketType)
+                                                                                .ToListAsync();
+
+                return archivedTicketsFromProject;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<Ticket>> GetArchivedTicketsWithoutCompanyIdAsync()

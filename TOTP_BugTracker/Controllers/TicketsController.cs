@@ -81,41 +81,46 @@ namespace TOTP_BugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment ticketComment)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    ticketComment.UserId = _userManager.GetUserId(User);
-                    ticketComment.Created = DataUtility.GetPostgresDate(DateTime.Now);
+                    try
+                    {
+                        ticketComment.UserId = _userManager.GetUserId(User);
+                        ticketComment.Created = DataUtility.GetPostgresDate(DateTime.Now);
 
-                    await _ticketService.AddTicketCommentAsync(ticketComment);
+                        await _ticketService.AddTicketCommentAsync(ticketComment, ticketComment.TicketId!.Value);
 
-                    await _historyService.AddHistoryAsync(ticketComment.TicketId, nameof(TicketComment), ticketComment.UserId);
+                        await _historyService.AddHistoryAsync(ticketComment.TicketId.Value, nameof(ticketComment), ticketComment.UserId);
+
+                        return RedirectToAction(nameof(Index));
+                    }
+                    catch (Exception)
+                    {
+
+                        throw;
+                    }
                 }
-                catch (Exception)
-                {
+                return RedirectToAction(nameof(Index));
 
-                    throw;
-                }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
-
-
-
-
 
         #region Archived Tickets
         public async Task<IActionResult> ArchivedTickets()
         {
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+            int companyId = User.Identity!.GetCompanyId();
 
             List<Ticket> archivedTickets = await _ticketService.GetArchivedTicketsByCompanyIdAsync(companyId);
             return View(archivedTickets);
-        } 
+        }
         #endregion
-
-
-
 
         #region GET method of AssignDev
         [Authorize(Roles = "ProjectManager, Admin")]
@@ -138,7 +143,7 @@ namespace TOTP_BugTracker.Controllers
             model.DevList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentDevId);
 
             return View(model);
-        } 
+        }
         #endregion
 
         #region POST method of AssignDev
@@ -193,9 +198,8 @@ namespace TOTP_BugTracker.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(AssignDev), new { id = model.Ticket!.Id });
-        } 
+        }
         #endregion
-
 
         #region TICKETS INDEX
         // GET: Tickets
@@ -208,10 +212,10 @@ namespace TOTP_BugTracker.Controllers
 
 
             return View(tickets);
-        } 
+        }
         #endregion
 
-        #region DETAILS
+        #region TICKET DETAILS
         // GET: Tickets/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -228,7 +232,7 @@ namespace TOTP_BugTracker.Controllers
             }
 
             return View(ticket);
-        } 
+        }
         #endregion
 
         #region GET method of CREATE
@@ -243,7 +247,7 @@ namespace TOTP_BugTracker.Controllers
             //ViewData["TicketStatusId"] = new SelectList(_context.Set<TicketStatus>(), "Id", "Id");
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name");
             return View();
-        } 
+        }
         #endregion
 
         #region POST method of CREATE
@@ -308,7 +312,7 @@ namespace TOTP_BugTracker.Controllers
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
             return View(ticket);
-        } 
+        }
         #endregion
 
         #region GET method of EDIT
@@ -334,13 +338,14 @@ namespace TOTP_BugTracker.Controllers
 
 
 
-            ViewData["ProjectId"] = new SelectList(await _projectService.GetAllProjectsByCompanyIdAsync(companyId), "Id", "Description", ticket.ProjectId);
-            ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Id", ticket.TicketPriorityId);
-            ViewData["TicketTypeId"] = new SelectList(_context.Set<TicketType>(), "Id", "Id", ticket.TicketTypeId);
+            ViewData["ProjectId"] = new SelectList(await _projectService.GetAllProjectsByCompanyIdAsync(companyId), "Id", "Name", ticket.ProjectId);
+            ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Name", ticket.TicketPriorityId);
+            ViewData["TicketTypeId"] = new SelectList(_context.Set<TicketType>(), "Id", "Name", ticket.TicketTypeId);
             return View(ticket);
-        } 
+        }
         #endregion
 
+        #region POST method of EDIT
         // POST: Tickets/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
@@ -400,7 +405,9 @@ namespace TOTP_BugTracker.Controllers
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Name", ticket.TicketTypeId);
             return View(ticket);
         }
+        #endregion
 
+        #region GET method of ARCHIVE TICKET
         // GET: Tickets/Archive/5
         public async Task<IActionResult> Archive(int? id)
         {
@@ -411,7 +418,7 @@ namespace TOTP_BugTracker.Controllers
 
             Ticket ticket = await _ticketService.GetTicketByIdAsync(id.Value);
 
-            
+
 
             if (ticket == null)
             {
@@ -420,7 +427,9 @@ namespace TOTP_BugTracker.Controllers
 
             return View(ticket);
         }
+        #endregion
 
+        #region ARCHIVE TICKET CONFIRMED
         // POST: Tickets/Archive/5
         [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
@@ -441,8 +450,18 @@ namespace TOTP_BugTracker.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        #endregion
 
+        public async Task<IActionResult> MyTickets()
+        {
+            string? userId = _userManager.GetUserId(User);
 
+            List<Ticket> relatedTickets = await _ticketService.GetAllTicketsRelatedToUserAsync(userId);
+
+            return View(relatedTickets);
+        }
+
+        #region GET method of RESTORE TICKET
         // GET: Tickets/Restore/5
         public async Task<IActionResult> Restore(int? id)
         {
@@ -462,7 +481,9 @@ namespace TOTP_BugTracker.Controllers
 
             return View(ticket);
         }
+        #endregion
 
+        #region RESTORE TICKET CONFIRMED
         // POST: Tickets/Restore/5
         [HttpPost, ActionName("Restore")]
         [ValidateAntiForgeryToken]
@@ -483,24 +504,25 @@ namespace TOTP_BugTracker.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        #endregion
 
-
-
-
-
+        #region Ticket Exists (returns boolean)
         private bool TicketExists(int id)
         {
             return (_context.Tickets?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        #endregion
 
-
-
+        #region Unassigned Tickets
         public async Task<IActionResult> UnassignedTickets(int projectId)
         {
             IEnumerable<Ticket> tickets = await _ticketService.GetUnassignedTicketsByProjectIdAsync(projectId);
 
             return View(tickets);
         }
+        #endregion
+
+
 
 
     }

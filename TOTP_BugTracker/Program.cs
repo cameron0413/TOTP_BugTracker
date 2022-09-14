@@ -35,6 +35,7 @@ builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddScoped<IInviteService, InviteService>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 builder.Services.AddScoped<IHistoryService, HistoryService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddMvc();

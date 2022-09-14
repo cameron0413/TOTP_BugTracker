@@ -43,7 +43,7 @@ namespace TOTP_BugTracker.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            int companyId = User.Identity.GetCompanyId();
+            int companyId = User.Identity!.GetCompanyId();
 
             List<Project> projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
 
@@ -71,7 +71,7 @@ namespace TOTP_BugTracker.Controllers
             int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
             model.Project = await _projectService.GetProjectByIdAsync(id.Value);
-            
+
             model.MemberList = new SelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName");
 
             return View(model);
@@ -102,10 +102,10 @@ namespace TOTP_BugTracker.Controllers
             // Service Call to RoleService
             model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName");
 
-            foreach (BTUser member in model.MemberList)
-            {
-                await _projectService.AddUserToProjectAsync(member, model.Project.Id);
-            }
+            //foreach (BTUser member in model.MemberList)
+            //{
+            //    await _projectService.AddUserToProjectAsync(member, model.Project.Id);
+            //}
 
             await _context.SaveChangesAsync();
 
@@ -167,7 +167,7 @@ namespace TOTP_BugTracker.Controllers
             // Service Call to RoleService
             model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
 
-            await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
+            await _projectService.AddProjectManagerAsync(model.PMID!, model.Project.Id);
 
             await _context.SaveChangesAsync();
 
@@ -191,10 +191,16 @@ namespace TOTP_BugTracker.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            Project project = await _projectService.GetProjectByIdAsync(id.Value);
+
+
+
+            //var project = await _context.Projects
+            //    .Include(p => p.Company)
+            //    .Include(p => p.ProjectPriority)
+            //    .Include(p => p.Tickets)
+            //    .Include(p => p.)
+            //    .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)
             {
                 return NotFound();
@@ -268,7 +274,7 @@ namespace TOTP_BugTracker.Controllers
                 // Service Call to RoleService
                 model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
 
-                
+
                 //await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -386,7 +392,9 @@ namespace TOTP_BugTracker.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Project'  is null.");
             }
-            var project = await _context.Projects.FindAsync(id);
+
+            var project = await _projectService.GetProjectByIdAsync(id);
+
             if (project != null)
             {
                 project.Archived = true;
@@ -395,9 +403,9 @@ namespace TOTP_BugTracker.Controllers
                 {
                     ticket.ArchivedByProject = true;
                 }
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -501,7 +509,7 @@ namespace TOTP_BugTracker.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(ArchivedIndex));
         }
 
         public async Task<IActionResult> UnassignedProjects(int companyId)

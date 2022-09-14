@@ -104,6 +104,9 @@ namespace TOTP_BugTracker.Services
         {
             Project project = await _context.Projects
                                             .Include(p => p.Members)
+                                            .Include(p => p.Tickets)
+                                            .Include(p => p.Company)
+                                            .Include(p => p.ProjectPriority)
                                             .FirstOrDefaultAsync(p => p.Id == projectId);
 
             return project;
