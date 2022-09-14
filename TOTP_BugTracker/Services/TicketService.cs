@@ -103,11 +103,46 @@ namespace TOTP_BugTracker.Services
             throw new NotImplementedException();
         }
 
+        public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId, int companyId)
+        {
+            try
+            {
+                Ticket? ticket = await _context.Projects!
+                                               .Where(p => p.CompanyId == companyId && p.Archived == false)
+                                               .SelectMany(p => p.Tickets)
+                                                  .Include(t => t.DeveloperUser)
+                                                  .Include(t => t.Attachments)
+                                                  .Include(t => t.Project)
+                                                  .Include(t => t.History)
+                                                  .Include(t => t.Comments)
+                                                  .Include(t => t.SubmitterUser)
+                                                  .Include(t => t.TicketPriority)
+                                                  .Include(t => t.TicketStatus)
+                                                  .Include(t => t.TicketType)
+                                                  .Where(t => t.Archived == false && t.ArchivedByProject == false)
+                                               .AsNoTracking()
+                                               .FirstOrDefaultAsync(t => t.Id == ticketId);
+
+
+                return ticket!;
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
         public async Task<Ticket> GetTicketByIdAsync(int ticketId)
         {
-            Ticket ticket = await _context.Tickets!
+            Ticket? ticket = await _context.Tickets!
                                           .Include(t => t.DeveloperUser)
+                                          .Include(t => t.Attachments)
                                           .Include(t => t.Project)
+                                          .Include(t => t.History)
+                                          .Include(t => t.Comments)
                                           .Include(t => t.SubmitterUser)
                                           .Include(t => t.TicketPriority)
                                           .Include(t => t.TicketStatus)

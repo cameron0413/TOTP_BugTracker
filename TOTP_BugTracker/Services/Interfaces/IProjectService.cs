@@ -16,7 +16,7 @@ namespace TOTP_BugTracker.Services.Interfaces
         public Task<BTUser>? GetProjectManagerAsync(int projectId);
         public Task<List<Project>> GetProjectsWithoutCompanyIdAsync();
         public Task<Project> GetProjectByIdAsync(int projectId);
-        public Task<bool> IsUserOnProjectAsync(int userId, int projectId);
+        public Task<bool> IsUserOnProjectAsync(string userId, int projectId);
         public Task<bool> ProjectHasPMAsync(int projectId);
         public Task RemoveProjectManagerAsync(int projectId);
         public Task<bool> RemoveUserFromProjectAsync(BTUser user, int projectId);

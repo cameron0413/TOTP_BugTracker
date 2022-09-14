@@ -13,12 +13,14 @@ namespace TOTP_BugTracker.Services
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly IRolesService _rolesService;
-        public ProjectService(ApplicationDbContext context, IRolesService rolesService)
+        public ProjectService(ApplicationDbContext context, IRolesService rolesService, IImageService imageService)
         {
             _context = context;
             _rolesService = rolesService;
+            _imageService = imageService;
         }
 
+        #region Get Projects WITHOUT Company ID Async
         public async Task<List<Project>> GetProjectsWithoutCompanyIdAsync()
         {
             List<Project> projects = await _context.Projects!
@@ -30,6 +32,9 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get All Projects WITH Company ID
         public async Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId)
         {
             var projects = await _context.Projects!
@@ -42,6 +47,9 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get IEnumerable of All Projects By Company ID - use for paged list I think?
         public async Task<IEnumerable<Project>> GetIEnumOfAllProjectsByCompanyIdAsync(int companyId)
         {
             IEnumerable<Project> projects = await _context.Projects!
@@ -54,6 +62,9 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get Archived Projects WITH Company ID
         public async Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId)
         {
             var projects = await _context.Projects
@@ -65,6 +76,9 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get Archived Projects WITHOUT Company Id
         public async Task<List<Project>> GetArchivedProjectsWithoutCompanyIdAsync()
         {
             var projects = await _context.Projects
@@ -76,6 +90,8 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
         #region Add project to company
         public async Task AddProjectAsync(Project project)
         {
@@ -83,6 +99,7 @@ namespace TOTP_BugTracker.Services
         }
         #endregion
 
+        #region Get Project by ID
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
             Project project = await _context.Projects
@@ -92,11 +109,17 @@ namespace TOTP_BugTracker.Services
             return project;
         }
 
+        #endregion
+
+        #region Update Project
         public async Task UpdateProjectAsync(Project project)
         {
             _context.Update(project);
         }
 
+        #endregion
+
+        #region Archive Project
         public async Task ArchiveProjectAsync(int projectId)
         {
             Project project = await GetProjectByIdAsync(projectId);
@@ -115,6 +138,9 @@ namespace TOTP_BugTracker.Services
 
         }
 
+        #endregion
+
+        #region Restore an Archived Project
         public async Task RestoreProjectAsync(int projectId)
         {
 
@@ -133,6 +159,9 @@ namespace TOTP_BugTracker.Services
 
         }
 
+        #endregion
+
+        #region Get Project Manager of Project
         public async Task<BTUser>? GetProjectManagerAsync(int projectId)
         {
             try
@@ -156,6 +185,9 @@ namespace TOTP_BugTracker.Services
             }
         }
 
+        #endregion
+
+        #region Add Project Manager to Project
         public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
         {
             BTUser currentPM = await GetProjectManagerAsync(projectId)!;
@@ -192,6 +224,9 @@ namespace TOTP_BugTracker.Services
             }
         }
 
+        #endregion
+
+        #region Remove Project Manager from Project
         public async Task RemoveProjectManagerAsync(int projectId)
         {
             try
@@ -215,6 +250,9 @@ namespace TOTP_BugTracker.Services
             }
         }
 
+        #endregion
+
+        #region Remove User from Project - returns Boolean
         public async Task<bool> RemoveUserFromProjectAsync(BTUser user, int projectId)
         {
             try
@@ -236,6 +274,9 @@ namespace TOTP_BugTracker.Services
             }
         }
 
+        #endregion
+
+        #region Is User On Project(userId, projectId) - returns boolean
         public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
         {
 
@@ -257,11 +298,9 @@ namespace TOTP_BugTracker.Services
             }
         }
 
-        public Task<bool> IsUserOnProjectAsync(int userId, int projectId)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
+        #region Get Unassigned Projects
         public async Task<List<Project>> GetUnassignedProjectsAsync(int companyId)
         {
             List<Project> rawProjects = await GetAllProjectsByCompanyIdAsync(companyId);
@@ -279,6 +318,37 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get Project Members In Role
+        public async Task<List<BTUser>> GetProjectMembersInRoleAsync(int projectId, string roleName)
+        {
+            try
+            {
+                Project? project = await _context.Projects.Include(p => p.Members).FirstOrDefaultAsync(p => p.Id == projectId);
+
+                List<BTUser> members = new();
+                foreach (BTUser bTUser in project!.Members)
+                {
+                    if (await _rolesService.IsUserInRoleAsync(bTUser, roleName))
+                    {
+                        members.Add(bTUser);
+                    }
+                }
+
+                return members;
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region Add User To Project
         public async Task<bool> AddUserToProjectAsync(BTUser user, int projectId)
         {
 
@@ -296,10 +366,7 @@ namespace TOTP_BugTracker.Services
                     await _context.SaveChangesAsync();
 
                     return true;
-
                 }
-
-
 
                 return false;
             }
@@ -311,10 +378,15 @@ namespace TOTP_BugTracker.Services
 
         }
 
+        #endregion
+
+        #region Check whether Project has PM
         public Task<bool> ProjectHasPMAsync(int projectId)
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 
 }

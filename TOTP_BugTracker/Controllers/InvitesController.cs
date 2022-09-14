@@ -80,6 +80,7 @@ namespace TOTP_BugTracker.Controllers
         {
             int companyId = User.Identity!.GetCompanyId();
             
+            ViewData["Companyid"] = new SelectList(_context.Companies.Include(c => c.Projects).ToList(), "Id", "Name");
             ViewData["ProjectId"] = new SelectList(await _projectService.GetAllProjectsByCompanyIdAsync(companyId), "Id", "Name");
             return View();
         }
