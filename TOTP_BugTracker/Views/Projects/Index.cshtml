@@ -93,9 +93,10 @@
                     @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>|
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a>|
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>|
                     <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>|
+                    <a asp-action="ManageMembers" asp-route-id="@item.Id">Manage Members</a>|
                     @if (User.IsInRole("Admin"))
                     {
                         <a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a>

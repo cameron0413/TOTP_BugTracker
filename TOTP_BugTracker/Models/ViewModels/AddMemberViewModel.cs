@@ -6,6 +6,6 @@ namespace TOTP_BugTracker.Models.ViewModels
     {
         public Project? Project { get; set; }
         public MultiSelectList? MemberList { get; set; }
-        public string? MemberId { get; set; }
+        public List<string>? MemberIds { get; set; }
     }
 }

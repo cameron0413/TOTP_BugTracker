@@ -79,16 +79,32 @@ namespace TOTP_BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment ticketComment)
+        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment ticketComment, string? commentBody)
         {
             try
             {
+                if (!string.IsNullOrEmpty(commentBody))
+                {
+                    ticketComment = new()
+                    {
+                        Comment = commentBody,
+                        Created = DataUtility.GetPostgresDate(DateTime.Now),
+                        UserId = _userManager.GetUserId(User)
+                    };
+
+                    await _ticketService.AddTicketCommentAsync(ticketComment, ticketComment.TicketId);
+                    await _historyService.AddHistoryAsync(ticketComment.TicketId!.Value, nameof(ticketComment), ticketComment.UserId);
+                    return RedirectToAction(nameof(Index));
+                }
+
+
                 if (ModelState.IsValid)
                 {
                     try
                     {
                         ticketComment.UserId = _userManager.GetUserId(User);
                         ticketComment.Created = DataUtility.GetPostgresDate(DateTime.Now);
+                        ticketComment.Comment = commentBody;
 
                         await _ticketService.AddTicketCommentAsync(ticketComment, ticketComment.TicketId!.Value);
 
@@ -333,6 +349,9 @@ namespace TOTP_BugTracker.Controllers
                 return NotFound();
             }
 
+            // Use Viewmodel to create ticket
+
+            // Or add parameter to Post action
 
 
 
@@ -351,9 +370,11 @@ namespace TOTP_BugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Created,Updated,Archived,ArchivedByProject,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId")] Ticket ticket)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Created,Updated,Archived,ArchivedByProject,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,DeveloperUserId,SubmitterUserId")] Ticket ticket, string? commentBody)
         {
             int companyId = User.Identity!.GetCompanyId();
+
+            
 
             if (id != ticket.Id)
             {
@@ -362,6 +383,21 @@ namespace TOTP_BugTracker.Controllers
 
             if (ModelState.IsValid)
             {
+
+                if (!string.IsNullOrEmpty(commentBody))
+                {
+                    TicketComment comment = new()
+                    {
+                        Comment = commentBody,
+                        Created = DataUtility.GetPostgresDate(DateTime.Now),
+                        TicketId = ticket.Id,
+                        UserId = _userManager.GetUserId(User)
+                    };
+
+                    await _ticketService.AddTicketCommentAsync(comment, ticket.Id);
+
+                }
+
                 int companyid = User.Identity!.GetCompanyId();
                 string userId = _userManager.GetUserId(User);
                 Ticket? oldTicket = await _ticketService.GetTicketAsNoTrackingAsync(ticket.Id, companyId);

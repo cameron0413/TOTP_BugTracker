@@ -262,7 +262,7 @@ namespace TOTP_BugTracker.Services
             {
                 Project? project = await GetProjectByIdAsync(projectId);
 
-                if (await IsUserOnProjectAsync(user.Id, projectId))
+                if (await IsUserOnProjectAsync(user.Id, projectId) == true)
                 {
                     project.Members.Remove(user);
                     await _context.SaveChangesAsync();
@@ -352,19 +352,17 @@ namespace TOTP_BugTracker.Services
         #endregion
 
         #region Add User To Project
-        public async Task<bool> AddUserToProjectAsync(BTUser user, int projectId)
+        public async Task<bool> AddUserToProjectAsync(BTUser? user, int projectId)
         {
-
             Project project = await GetProjectByIdAsync(projectId);
 
-            bool onProject = project.Members.Any(m => m.Id == user.Id);
-
+            bool onProject = project.Members.Any(m => m.Id == user!.Id);
 
             try
             {
                 if (!onProject)
                 {
-                    project.Members.Add(user);
+                    project.Members.Add(user!);
 
                     await _context.SaveChangesAsync();
 
@@ -372,6 +370,7 @@ namespace TOTP_BugTracker.Services
                 }
 
                 return false;
+                
             }
             catch (Exception)
             {

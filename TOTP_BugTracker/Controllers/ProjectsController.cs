@@ -57,65 +57,6 @@ namespace TOTP_BugTracker.Controllers
             return View(projects);
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Admin,ProjectManager")]
-        public async Task<IActionResult> AddProjectMember(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            AddMemberViewModel model = new();
-
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
-
-            model.Project = await _projectService.GetProjectByIdAsync(id.Value);
-
-            model.MemberList = new SelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName");
-
-            return View(model);
-        }
-
-
-
-
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddProjectMember(AddMemberViewModel model)
-        {
-            if (!string.IsNullOrEmpty(model.MemberId))
-            {
-                await _projectService.AddProjectManagerAsync(model.MemberId, model.Project!.Id);
-                return RedirectToAction(nameof(Index));
-            }
-
-            ModelState.AddModelError("MemberId", "No Members chosen! Please select at least one Member.");
-
-
-            //Get companyId
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
-
-            model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
-
-            // Service Call to RoleService
-            model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName");
-
-            //foreach (BTUser member in model.MemberList)
-            //{
-            //    await _projectService.AddUserToProjectAsync(member, model.Project.Id);
-            //}
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id });
-        }
-
-
-
-
-
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignProjectManager(int? id)
         {
@@ -409,6 +350,7 @@ namespace TOTP_BugTracker.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ManageMembers(int? id)
         {
@@ -417,18 +359,18 @@ namespace TOTP_BugTracker.Controllers
                 return NotFound();
             }
 
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-
-            AssignPMViewModel model = new();
+            AddMemberViewModel model = new();
 
             int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
             model.Project = await _projectService.GetProjectByIdAsync(id.Value);
 
-            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
-
-            // Service Call to RoleService
-            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
+            model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName", model.MemberIds);
 
             return View(model);
         }
@@ -439,32 +381,39 @@ namespace TOTP_BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ManageMembers(AssignPMViewModel model)
+        public async Task<IActionResult> ManageMembers(AddMemberViewModel model)
         {
-            if (!string.IsNullOrEmpty(model.PMID))
+            if (model.MemberIds != null)
             {
-                await _projectService.AddProjectManagerAsync(model.PMID, model.Project!.Id);
+                model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+                int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+                foreach (BTUser member in model.Project.Members)
+                {
+                    await _projectService.RemoveUserFromProjectAsync(member, model.Project.Id);
+                }
+                
+                //Get companyId
+
+
+                model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName", model.MemberIds);
+
+
+                foreach (string memberId in model.MemberIds)
+                {
+                    BTUser newMember = await _context.Users.FirstOrDefaultAsync(n => n.Id == memberId);
+
+                    await _projectService.AddUserToProjectAsync(newMember, model.Project.Id);
+                }
+
+
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            ModelState.AddModelError("PMID", "No Project Manager chosen! Please select a PM.");
+            ModelState.AddModelError("MemberId", "No Members chosen! Please select at least one Member.");
 
-
-            //Get companyId
-            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
-
-            model.Project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
-
-            string? currentPMId = (await _projectService.GetProjectManagerAsync(model.Project.Id)!)?.Id;
-
-            // Service Call to RoleService
-            model.PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName", currentPMId);
-
-            await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id });
+            return RedirectToAction(nameof(Index));
         }
 
 

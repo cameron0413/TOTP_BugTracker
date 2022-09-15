@@ -7,7 +7,7 @@ namespace TOTP_BugTracker.Services.Interfaces
     {
         public Task AddProjectAsync(Project project);
         public Task<bool> AddProjectManagerAsync(string userId, int projectId);
-        public Task<bool> AddUserToProjectAsync(BTUser user, int projectId);
+        public Task<bool> AddUserToProjectAsync(BTUser? user, int projectId);
         public Task ArchiveProjectAsync(int projectId);
         public Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId);
         public Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId);

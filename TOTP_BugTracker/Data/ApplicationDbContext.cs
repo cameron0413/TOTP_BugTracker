@@ -23,5 +23,10 @@ namespace TOTP_BugTracker.Data
         public virtual DbSet<TicketPriority> TicketPriorities { get; set; } = default!;
         public virtual DbSet<TicketStatus> TicketStatuses { get; set; } = default!;
         public virtual DbSet<TicketType> TicketTypes { get; set; } = default!;
+
+        internal Task<BTUser> FirstOrDefaultAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
