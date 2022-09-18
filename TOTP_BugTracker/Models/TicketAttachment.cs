@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TOTP_BugTracker.Extensions;
 
 namespace TOTP_BugTracker.Models
 {
@@ -22,6 +24,10 @@ namespace TOTP_BugTracker.Models
         //Property for passing file information from the form(html) to the post.
         //Also not saved in the database via [NotMapped] attribute
         [NotMapped]
+        [DisplayName("Select a file")]
+        [DataType(DataType.Upload)]
+        [MaxFileSize(1024 * 1024)]
+        [AllowedExtensions(new string[] { ".jpg", ".png", ".doc", ".docx", ".xls", ".xlsx", ".pdf" })]
         public virtual IFormFile? ImageFormFile { get; set; }
 
         // Navigation Properties

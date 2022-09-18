@@ -34,8 +34,24 @@ namespace TOTP_BugTracker.Services
         {
             try
             {
-                _context.Tickets.Add(ticket);
+                await _context.AddAsync(ticket);
 
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment)
+        {
+            try
+            {
+                await _context.AddAsync(ticketAttachment);
+                await _context.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -192,30 +208,37 @@ namespace TOTP_BugTracker.Services
         public async Task<Ticket> GetTicketByIdAsync(int ticketId)
         {
             Ticket? ticket = await _context.Tickets!
-                                          .Include(t => t.DeveloperUser)
-                                          .Include(t => t.Attachments)
-                                          .Include(t => t.Project)
-                                          .Include(t => t.History)
-                                          .Include(t => t.Comments)
-                                             .ThenInclude(c => c.User)
-                                          .Include(t => t.SubmitterUser)
-                                          .Include(t => t.TicketPriority)
-                                          .Include(t => t.TicketStatus)
-                                          .Include(t => t.TicketType)
-                                          .FirstOrDefaultAsync(t => t.Id == ticketId)!;
+                                           .Include(t => t.DeveloperUser)
+                                           .Include(t => t.Attachments)
+                                           .Include(t => t.Project)
+                                           .Include(t => t.History)
+                                           .Include(t => t.Comments)
+                                              .ThenInclude(c => c.User)
+                                           .Include(t => t.SubmitterUser)
+                                           .Include(t => t.TicketPriority)
+                                           .Include(t => t.TicketStatus)
+                                           .Include(t => t.TicketType)
+                                           .FirstOrDefaultAsync(t => t.Id == ticketId)!;
 
 
             return ticket!;
         }
 
-        public async Task<BTUser>? GetTicketDevAsync(int projectId)
+        public async Task<BTUser>? GetTicketDevAsync(int ticketId)
         {
-            throw new NotImplementedException();
+            Ticket ticket = await GetTicketByIdAsync(ticketId);
+
+            BTUser developer = ticket.DeveloperUser!;
+
+            return developer;
         }
 
         public async Task<List<Ticket>> GetTicketsWithoutCompanyIdAsync()
         {
-            throw new NotImplementedException();
+            List<Ticket> allTickets = await _context.Tickets.Where(t => t.Archived == false && t.ArchivedByProject == false).ToListAsync();
+
+
+            return allTickets;
         }
 
         public async Task<List<Ticket>> GetUnassignedTicketsByProjectIdAsync(int projectId)

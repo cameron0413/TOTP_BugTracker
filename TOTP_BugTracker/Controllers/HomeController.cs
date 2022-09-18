@@ -61,6 +61,11 @@ namespace TOTP_BugTracker.Controllers
 
         #endregion
 
+        public IActionResult Landing()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

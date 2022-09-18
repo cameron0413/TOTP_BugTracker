@@ -206,7 +206,11 @@ namespace TOTP_BugTracker.Controllers
                     model.Project.ImageType = model.Project.ImageFormFile.ContentType;
                 }
 
-                await _projectService.AddProjectAsync(model.Project);
+                if (User.IsInRole(nameof(BTRoles.DemoUser)))
+                {
+                    await _projectService.AddProjectAsync(model.Project);
+
+                }
 
                 int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
@@ -392,7 +396,7 @@ namespace TOTP_BugTracker.Controllers
                 {
                     await _projectService.RemoveUserFromProjectAsync(member, model.Project.Id);
                 }
-                
+
                 //Get companyId
 
 

@@ -27,15 +27,16 @@ namespace TOTP_BugTracker.Controllers
         private readonly IRolesService _rolesService;
         private readonly IHistoryService _historyService;
         private readonly INotificationService _notificationService;
+        private readonly IImageService _imageService;
 
-        public TicketsController(
-                                 ApplicationDbContext context,
+        public TicketsController(ApplicationDbContext context,
                                  UserManager<BTUser> userManager,
                                  IProjectService projectService,
                                  ITicketService ticketService,
                                  IRolesService rolesService,
                                  IHistoryService historyService,
-                                 INotificationService notificationService)
+                                 INotificationService notificationService,
+                                 IImageService imageService)
         {
             _context = context;
             _userManager = userManager;
@@ -44,6 +45,33 @@ namespace TOTP_BugTracker.Controllers
             _rolesService = rolesService;
             _historyService = historyService;
             _notificationService = notificationService;
+            _imageService = imageService;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
+        {
+            string statusMessage;
+
+            if (ModelState.IsValid && ticketAttachment.ImageFormFile != null)
+            {
+                ticketAttachment.ImageData = await _imageService.ConvertFileToByteArrayAsync(ticketAttachment.ImageFormFile);
+                ticketAttachment.ImageType = ticketAttachment.ImageFormFile.ContentType;
+
+                ticketAttachment.Created = DataUtility.GetPostgresDate(DateTime.Now);
+                ticketAttachment.UserId = _userManager.GetUserId(User);
+
+                await _ticketService.AddTicketAttachmentAsync(ticketAttachment);
+                statusMessage = "Success: New attachment added to Ticket.";
+            }
+            else
+            {
+                statusMessage = "Error: Invalid data.";
+
+            }
+
+            return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
         }
 
 
@@ -79,53 +107,27 @@ namespace TOTP_BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment ticketComment, string? commentBody)
+        public async Task<IActionResult> AddTicketComment([Bind("Id, UserId, TicketId, Comment")] TicketComment ticketComment, int ticketId, string? commentBody)
         {
-            try
+            ModelState.Remove("UserId");
+            ModelState.Remove("Comment");
+            if (ModelState.IsValid)
             {
-                if (!string.IsNullOrEmpty(commentBody))
+                try
                 {
-                    ticketComment = new()
-                    {
-                        Comment = commentBody,
-                        Created = DataUtility.GetPostgresDate(DateTime.Now),
-                        UserId = _userManager.GetUserId(User)
-                    };
-
-                    await _ticketService.AddTicketCommentAsync(ticketComment, ticketComment.TicketId);
-                    await _historyService.AddHistoryAsync(ticketComment.TicketId!.Value, nameof(ticketComment), ticketComment.UserId);
-                    return RedirectToAction(nameof(Index));
+                    Ticket ticket = await _ticketService.GetTicketByIdAsync(ticketId);
+                    ticketComment.UserId = _userManager.GetUserId(User);
+                    ticketComment.Created = DataUtility.GetPostgresDate(DateTime.UtcNow);
+                    ticketComment.Comment = commentBody;
+                    await _ticketService.AddTicketCommentAsync(ticketComment, ticketId);
+                    await _historyService.AddHistoryAsync(ticketComment.TicketId!.Value, nameof(TicketComment), ticketComment.UserId);
                 }
-
-
-                if (ModelState.IsValid)
+                catch (Exception)
                 {
-                    try
-                    {
-                        ticketComment.UserId = _userManager.GetUserId(User);
-                        ticketComment.Created = DataUtility.GetPostgresDate(DateTime.Now);
-                        ticketComment.Comment = commentBody;
-
-                        await _ticketService.AddTicketCommentAsync(ticketComment, ticketComment.TicketId!.Value);
-
-                        await _historyService.AddHistoryAsync(ticketComment.TicketId.Value, nameof(ticketComment), ticketComment.UserId);
-
-                        return RedirectToAction(nameof(Index));
-                    }
-                    catch (Exception)
-                    {
-
-                        throw;
-                    }
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
-
             }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            return RedirectToAction(nameof(Index));
         }
 
         #region Archived Tickets

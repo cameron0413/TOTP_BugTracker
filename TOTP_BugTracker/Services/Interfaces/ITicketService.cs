@@ -5,6 +5,7 @@ namespace TOTP_BugTracker.Services.Interfaces
     public interface ITicketService
     {
         public Task AddTicketAsync(Ticket ticket);
+        public Task AddTicketAttachmentAsync(TicketAttachment ticketAttachment);
         public Task AddTicketCommentAsync(TicketComment comment, int ticketId);
         public Task<List<Ticket>> GetAllTicketsByCompanyIdAsync(int companyId);
         public Task<List<Ticket>> GetAllTicketsByProjectIdAsync(int projectId);
