@@ -64,6 +64,28 @@ namespace TOTP_BugTracker.Services
 
         #endregion
 
+        #region Get All Projects By Priority
+        public async Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priority)
+        {
+            try
+            {
+                var projects = await _context.Projects!
+                                             .Where(p => p.Archived == false && p.CompanyId == companyId && p.ProjectPriority!.Name == priority)
+                                             .Include(p => p.Company)
+                                             .Include(p => p.ProjectPriority)
+                                             .ToListAsync();
+
+
+                return projects;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        } 
+        #endregion
+
         #region Get Archived Projects WITH Company ID
         public async Task<List<Project>> GetArchivedProjectsByCompanyIdAsync(int companyId)
         {
@@ -188,6 +210,30 @@ namespace TOTP_BugTracker.Services
             }
         }
 
+        #endregion
+
+        #region Get Project Members By Role Async
+        public async Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName)
+        {
+            try
+            {
+                Project? project = await _context.Projects.Include(p => p.Members)
+                                                          .FirstOrDefaultAsync(p => p.Id == projectId);
+                List<BTUser> members = new();
+                foreach (BTUser btUser in project!.Members!)
+                {
+                    if (await _rolesService.IsUserInRoleAsync(btUser, roleName))
+                    {
+                        members.Add(btUser);
+                    }
+                }
+                return members;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        } 
         #endregion
 
         #region Add Project Manager to Project
@@ -321,6 +367,43 @@ namespace TOTP_BugTracker.Services
             return projects;
         }
 
+        #endregion
+
+        #region Get User Projects Async (all projects related to a certain user)
+        public async Task<List<Project>> GetUserProjectsAsync(string userId)
+        {
+            try
+            {
+                List<Project>? projects = (await _context.Users
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Company)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Members)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(p => p.Tickets)
+                                                         .Include(u => u.Projects)!
+                                                            .ThenInclude(t => t.Tickets)
+                                                                .ThenInclude(t => t.DeveloperUser)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.SubmitterUser)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketPriority)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketStatus)
+                                                         .Include(u => u.Projects)!
+                                                             .ThenInclude(t => t.Tickets)
+                                                                 .ThenInclude(t => t.TicketType)
+                                                         .FirstOrDefaultAsync(u => u.Id == userId))?.Projects!.ToList();
+                return projects!;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        } 
         #endregion
 
         #region Get Project Members In Role

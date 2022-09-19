@@ -175,7 +175,17 @@ namespace TOTP_BugTracker.Controllers
         }
 
 
+        #region My Projects View
+        public async Task<IActionResult> MyProjects()
+        {
+            string userId = _userManager.GetUserId(User);
 
+            List<Project> projects = await _projectService.GetUserProjectsAsync(userId);
+
+            return View(projects);
+
+        } 
+        #endregion
 
 
 

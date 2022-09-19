@@ -20,6 +20,7 @@ namespace TOTP_BugTracker.Controllers
     [Authorize]
     public class TicketsController : Controller
     {
+        #region Service/Database Injections
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
         private readonly IProjectService _projectService;
@@ -27,8 +28,10 @@ namespace TOTP_BugTracker.Controllers
         private readonly IRolesService _rolesService;
         private readonly IHistoryService _historyService;
         private readonly INotificationService _notificationService;
-        private readonly IImageService _imageService;
+        private readonly IImageService _imageService; 
+        #endregion
 
+        #region TicketsController Constructor
         public TicketsController(ApplicationDbContext context,
                                  UserManager<BTUser> userManager,
                                  IProjectService projectService,
@@ -46,8 +49,10 @@ namespace TOTP_BugTracker.Controllers
             _historyService = historyService;
             _notificationService = notificationService;
             _imageService = imageService;
-        }
+        } 
+        #endregion
 
+        #region Add Ticket Attachment
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
@@ -72,9 +77,11 @@ namespace TOTP_BugTracker.Controllers
             }
 
             return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
-        }
+        } 
+        #endregion
 
 
+        #region GET of Add Ticket Comment
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> AddTicketComment(int? id)
@@ -104,7 +111,9 @@ namespace TOTP_BugTracker.Controllers
             ViewData["TicketTypeId"] = new SelectList(_context.Set<TicketType>(), "Id", "Id", ticket.TicketTypeId);
             return View(ticket);
         }
+        #endregion
 
+        #region POST of Add Ticket Comment
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTicketComment([Bind("Id, UserId, TicketId, Comment")] TicketComment ticketComment, int ticketId, string? commentBody)
@@ -128,7 +137,8 @@ namespace TOTP_BugTracker.Controllers
                 }
             }
             return RedirectToAction(nameof(Index));
-        }
+        } 
+        #endregion
 
         #region Archived Tickets
         public async Task<IActionResult> ArchivedTickets()
@@ -490,14 +500,17 @@ namespace TOTP_BugTracker.Controllers
         }
         #endregion
 
+        #region MY TICKETS VIEW
         public async Task<IActionResult> MyTickets()
         {
+            int companyId = User.Identity!.GetCompanyId();
             string? userId = _userManager.GetUserId(User);
 
-            List<Ticket> relatedTickets = await _ticketService.GetAllTicketsRelatedToUserAsync(userId);
+            List<Ticket> relatedTickets = await _ticketService.GetAllTicketsRelatedToUserAsync(userId, companyId);
 
             return View(relatedTickets);
-        }
+        } 
+        #endregion
 
         #region GET method of RESTORE TICKET
         // GET: Tickets/Restore/5

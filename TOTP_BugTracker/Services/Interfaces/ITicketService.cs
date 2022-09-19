@@ -9,7 +9,7 @@ namespace TOTP_BugTracker.Services.Interfaces
         public Task AddTicketCommentAsync(TicketComment comment, int ticketId);
         public Task<List<Ticket>> GetAllTicketsByCompanyIdAsync(int companyId);
         public Task<List<Ticket>> GetAllTicketsByProjectIdAsync(int projectId);
-        public Task<List<Ticket>> GetAllTicketsRelatedToUserAsync(string userId);
+        public Task<List<Ticket>> GetAllTicketsRelatedToUserAsync(string userId, int companyId);
         public Task<List<Ticket>> GetArchivedTicketsByCompanyIdAsync(int companyId);
         public Task<List<Ticket>> GetArchivedTicketsByProjectIdAsync(int projectId);
         public Task<List<Ticket>> GetArchivedTicketsWithoutCompanyIdAsync();
