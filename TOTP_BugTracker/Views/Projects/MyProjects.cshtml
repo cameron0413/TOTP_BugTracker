@@ -1,0 +1,112 @@
+﻿@model IEnumerable<TOTP_BugTracker.Models.Project>
+@using TOTP_BugTracker.Enums;
+@using TOTP_BugTracker.Services.Interfaces;
+@inject IImageService _ImageService;
+@inject IProjectService _ProjectService;
+@inject IRolesService _RolesService;
+
+@{
+    ViewData["Title"] = "Index";
+
+}
+
+<h1>Index</h1>
+<div class="container">
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Created)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.StartDate)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.EndDate)
+                </th>
+                <th>
+                    P.M.
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ImageFormFile)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Archived)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Company)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.ProjectPriority)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Created)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StartDate)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.EndDate)
+                    </td>
+                    @{
+                        BTUser projectManager = await _ProjectService.GetProjectManagerAsync(item.Id)!;
+                        if (projectManager != null)
+                        {
+                            <td>@projectManager.FullName</td>
+                        }
+                        else
+                        {
+                            <td><a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a></td>
+                        }
+                    }
+                    <td>
+                        <img class="img-fluid" src="@_ImageService.ConvertByteArrayToFile(item.ImageData!,item.ImageType!,(int)DefaultImage.Project)" alt="Post Images">
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Archived)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Company!.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>|
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>|
+                        <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>|
+                        <a asp-action="ManageMembers" asp-route-id="@item.Id">Manage Members</a>|
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="AssignProjectManager" asp-route-id="@item.Id">Assign PM</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-action="ArchivedIndex">View archived items</a>
+</div>

@@ -59,6 +59,16 @@ namespace TOTP_BugTracker.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Required]
+            [Display(Name = "First Name")]
+            [StringLength(50, ErrorMessage = "The {0} must be at least {2} and a maximum of {1} characters.", MinimumLength = 2)]
+            public string? FirstName { get; set; }
+
+            [Required]
+            [Display(Name = "Last name")]
+            [StringLength(50, ErrorMessage = "The {0} must be at least {2} and a maximum of {1} characters.", MinimumLength = 2)]
+            public string? LastName { get; set; }
         }
 
         private async Task LoadAsync(BTUser user)

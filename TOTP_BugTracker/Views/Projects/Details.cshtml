@@ -7,6 +7,266 @@
 @{
     ViewData["Title"] = "Details";
 }
+
+<h1>Details</h1>
+
+<div>
+    <div class="container-fluid">
+        <div class="row gy-2">
+            <div class="col-md-12 col">
+                <div class="row col-cols-2 mt-5 bg-secondary">
+                    <div class="card col m-1 p-2">
+                        <div class="body">
+                            @* Project Name *@
+                            <h5>@Model.Name</h5>
+                            @* Project Description *@
+                            <p>@Model.Description</p>
+                            <div class="progress-container progress-info m-b-25">
+                                <span class="progress-badge" style="font-size:small">Project Status</span>
+                                <div class="progress">
+                                    @* Razor code block *@
+                                    @{
+                                        var start = Model.StartDate;
+                                        var end = Model.EndDate;
+                                        var today = DateTime.Now;
+                                        var percent = today >= end ? 100 : today < start ? 0 : Math.Round((today.Subtract(start)) / (end.Subtract(start)) * 100);
+                                    }
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: @percent%;">
+                                        @* Use Progress Bar code variable here *@
+                                        <span class="progress-value">@percent%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card col m-1 p-2">
+                        <div class="body">
+                            <ul class=" list-unstyled basic-list">
+                                <li>Start Date: <span class="">@Model.StartDate.ToString("dddd, MMM dd yyyy")</span></li>
+                                <li>Deadline: <span class="">@Model.EndDate.ToString("dddd, MMM dd yyyy")</span></li>
+                                <li>Priority: <span class="">@Model.ProjectPriority!.Name</span></li>
+                                @* if() logic *@
+                                @if (Model.EndDate < DateTime.Today)
+                                {
+                                    <h5>Status: Inactive</h5>
+                                }
+                                else
+                                {
+                                    <h5>Status: Active</h5>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col mt-5 ">
+                <div class="bg-secondary">
+                    <div class="card m-1 p-2">
+                        <div class="header">
+                            <h2>Project Manager</h2>
+                            <hr />
+                        </div>
+                        <div class="body" style="overflow-y:auto;height:300px;">
+                            [Project Manager]
+                            @* if() logic for Avatar/Default etc *@
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col mt-5 ">
+                <div class="bg-secondary">
+                    <div class="card m-1 p-2">
+                        <div class="header">
+                            <h2>Project Team</h2>
+                            <hr />
+                        </div>
+                        <div class="body" style="overflow-y:auto;height:300px;">
+                            <ul class="right_chat list-unstyled mb-0">
+
+                                [Project Members]
+                                @* Logic for avatars *@
+                            </ul>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col mt-5 ">
+                <div class="bg-dark">
+                    <div class="card m-1 p-2">
+                        <div class="header">
+                            <h2>Project Activity</h2>
+                            <hr />
+                        </div>
+                        <div class="body" style="overflow-y:auto;height:300px;background-color:antiquewhite">
+                            @* Project Activity loop *@
+                            [Project Activity  e.g. Ticket History]
+                            @{
+                                @foreach (Ticket ticket in Model.Tickets)
+                                {
+                                    <div class="border border-danger">
+                                        if (ticket.History == null)
+                                        {
+                                        <p>No history for this ticket.</p>
+                                        }
+                                        else
+                                        {
+                                        @foreach (TicketHistory history in ticket.History)
+                                        {
+                                            if (history.PropertyName == "TicketComment")
+                                            {
+                                                <div class="border">
+                                                    <p>@history.Created.ToString("MMM dd yyyy")</p>
+                                                    <p>@history.User!.FullName</p>
+
+                                                    <p>New comment added.</p>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="border border-danger">
+                                                    <p>@history.Created</p>
+                                                    <p>@history.User!.FullName</p>
+
+                                                    <span><p>@history.PropertyName</p>:</span>
+                                                    <p>@history.OldValue</p> -> <span>@history.NewValue</span>
+                                                </div>
+
+                                            }
+
+                                        }
+
+                                        }
+                                    </div>
+                                }
+
+
+                            }
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12 col">
+                <div class="mt-5 bg-secondary">
+                    <div class="card m-1 p-2">
+                        <div class="header">
+                            <h2>Tickets</h2>
+                        </div>
+                        <div class="body">
+                            <div class="table-responsive" style="overflow-y:auto;height:600px;">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Title
+                                            </th>
+                                            <th>
+                                                Description
+                                            </th>
+                                            <th>
+                                                Created Date
+                                            </th>
+                                            <th>
+                                                Last Updated
+                                            </th>
+                                            <th>
+                                                Archived?
+                                            </th>
+                                            <th>
+                                                Archived By Project?
+                                            </th>
+                                            <th>
+                                                Project
+                                            </th>
+                                            <th>
+                                                Ticket Priority
+                                            </th>
+                                            <th>
+                                                Ticket Type
+                                            </th>
+                                            <th>
+                                                Ticket Status
+                                            </th>
+                                            <th>
+                                                Developer
+                                            </th>
+                                            <th>
+                                                Submitter
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var ticket in Model.Tickets)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Title)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Description)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Created)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Updated)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Archived)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.ArchivedByProject)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.Project.Description)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.TicketPriority.Id)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.TicketType.Id)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.TicketStatus.Id)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.DeveloperUser.Id)
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(modelItem => ticket.SubmitterUser.Id)
+                                                </td>
+                                                <td>
+                                                    <a asp-action="Edit" asp-route-id="@ticket.Id">Edit</a> |
+                                                    <a asp-action="Details" asp-route-id="@ticket.Id">Details</a> |
+                                                    <a asp-action="Delete" asp-route-id="@ticket.Id">Delete</a> |
+                                                    @{
+                                                        if ((User.IsInRole("ProjectManager")) || (User.IsInRole("Admin")))
+                                                        {
+                                                            <a asp-controller="Tickets" asp-action="AssignDev" asp-route-id="@ticket.Id">Assign Dev</a>
+                                                        }
+
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <h1>Details</h1>
 <div>
     <h4>Project</h4>
