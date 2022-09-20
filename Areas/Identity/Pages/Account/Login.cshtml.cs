@@ -115,8 +115,8 @@ namespace TOTP_BugTracker.Areas.Identity.Pages.Account
 
             if (!string.IsNullOrEmpty(demoEmail))
             {
-                string email = _configuration[demoEmail];
-                string password = _configuration["DemoUserPassword"];
+                string email = _configuration[demoEmail] ?? Environment.GetEnvironmentVariable(demoEmail);
+                string password = _configuration["DemoUserPassword"] ?? Environment.GetEnvironmentVariable("DemoUserPassword");
                 var result = await _signInManager.PasswordSignInAsync(email, password, false, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
