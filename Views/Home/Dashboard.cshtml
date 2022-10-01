@@ -264,7 +264,7 @@
         @Model.Tickets.Where(t => t.TicketStatus!.Name == nameof(BTTicketStatuses.New)).Count(),
         @Model.Tickets.Where(t => t.TicketStatus!.Name == nameof(BTTicketStatuses.Resolved)).Count(),
         @Model.Tickets.Where(t => t.TicketStatus!.Name == nameof(BTTicketStatuses.Testing)).Count()
-                                                                                        ],
+                                                                                                ],
                     backgroundColor: [
                         'rgba(255, 99, 132, 0.2)',
                         'rgba(54, 162, 235, 0.2)',
@@ -302,16 +302,16 @@
         var morrisDonutData = [{
             label: "Low",
             value: @Model.Tickets.Where(t=>t.TicketPriority.Name == nameof(BTTicketPriorities.Low)).Count()
-                                                    }, {
+                                                            }, {
             label: "Medium",
             value: @Model.Tickets.Where(t=>t.TicketPriority.Name == nameof(BTTicketPriorities.Medium)).Count()
-                                                    }, {
+                                                            }, {
             label: "High",
             value: @Model.Tickets.Where(t=>t.TicketPriority.Name == nameof(BTTicketPriorities.High)).Count()
-                                                    }, {
+                                                            }, {
             label: "Urgent",
             value: @Model.Tickets.Where(t=>t.TicketPriority.Name == nameof(BTTicketPriorities.Urgent)).Count()
-                                                    }];
+                                                            }];
 
 
         /*

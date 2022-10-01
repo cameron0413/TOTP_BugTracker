@@ -3,9 +3,14 @@
 @using TOTP_BugTracker.Services.Interfaces;
 @inject IImageService _ImageService;
 @inject IRolesService _RolesService;
+@inject IProjectService _ProjectService;
 
 @{
     ViewData["Title"] = "Details";
+
+
+
+
 }
 
 <h1>Details</h1>
@@ -63,7 +68,25 @@
                 <div class="bg-secondary">
                     <div class="card m-1 p-2">
                         <div class="header">
-                            <h2>Project Manager</h2>
+                            <h2>Project Manager:</h2>
+                            @{
+                                BTUser projectManager = await _ProjectService.GetProjectManagerAsync(Model.Id);
+
+                                if (projectManager != null)
+                                {
+                                    <span>@projectManager.FullName</span>
+                                }
+                                else
+                                {
+                                    <span>No Project Manager assigned.</span>
+
+                                    if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="AssignProjectManager" asp-controller="Projects" asp-route-id="@Model.Id">Assign PM</a>
+                                    }
+                                }
+
+                            }
                             <hr />
                         </div>
                         <div class="body" style="overflow-y:auto;height:300px;">
