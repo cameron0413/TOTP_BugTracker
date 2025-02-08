@@ -12,8 +12,8 @@ using TOTP_BugTracker.Data;
 namespace TOTP_BugTracker.data.migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20220831143757_005_MadeModelsPlural")]
-    partial class _005_MadeModelsPlural
+    [Migration("20250208230423_001_Initial")]
+    partial class _001_Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
